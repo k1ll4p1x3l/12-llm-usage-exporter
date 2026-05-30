@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Prepare milestone notes
         id: prepare
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const {data: repository} = await github.rest.repos.get({
