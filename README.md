@@ -1,102 +1,99 @@
-# llm-usage-exporter
+# Codex Agent Orchestration Pack — Public
 
-`llm-usage-exporter` is a local telemetry adapter that reads usage and quota data from coding agents and exports normalized snapshots to JSON and Prometheus.
+Stand: 2026-05-30
 
-## Current status
+Public-safe Variante: enthält keine privaten IPs, Hostnames, Domains, persönlichen Namen, Secrets oder lokalen Inventare.
 
-- Development stage: pre-alpha
-- Primary platform: Linux
-- Primary language: Go
-- Primary provider: OpenAI Codex (read-only)
+Dieses Paket ist ein public-safe Drop-in-Orchestrierungsgerüst für GitHub-Repositories, die mit Codex bearbeitet werden sollen. Es ist absichtlich breit angelegt: Code, Infrastructure/IaC, Recherche, Datenanalyse, Automatisierung, Entscheidungsfindung und Schreibprojekte.
 
-## Architecture
+## Zweck
+
+Der Hauptthread, idealerweise ein starkes Frontier-Modell, arbeitet als Orchestrator und finaler Reviewer. Subagenten übernehmen klar abgegrenzte, billigere oder risikoärmere Teilaufgaben. Ziel ist hoher Automatisierungsgrad ohne Kontrollverlust, Kapazitätsverbrennung oder „Agent hat produktives DNS umdekoriert“-Folklore.
+
+## Installation
+
+Aus diesem Paketordner heraus:
+
+```bash
+./scripts/install_into_repo.sh /pfad/zu/deinem/repo
+```
+
+Oder manuell in die Wurzel des Ziel-Repos kopieren:
 
 ```text
-Provider source (e.g. Codex App Server)
-  -> collector
-  -> neutral model
-  -> exporters (JSON file, Prometheus)
-  -> local monitoring
+AGENTS.md
+.codex/
+.agents/skills/
+docs/
+templates/
+scripts/
+references/
 ```
 
-The project is intentionally a data translator, not a credential manager, dashboard, or authentication service.
-
-## Key guarantees
-
-- No credential persistence.
-- No token refresh/login/logout flows.
-- No web UI scraping.
-- No proxy/MITM collection.
-- Unknown provider schema results in explicit error status snapshots.
-
-## Quick start
+## Empfohlener Start in einem Ziel-Repo
 
 ```bash
-go build ./cmd/llm-usage-exporter
-./llm-usage-exporter serve --config config.yaml
+cd /pfad/zu/deinem/repo
+python3 scripts/verify_codex_agent_pack.py
+python3 scripts/create_repo_context.py --write
+codex -m gpt-5.5
 ```
 
-Run a one-shot snapshot:
+Startprompt:
+
+```text
+Nutze AGENTS.md und das Agent-Orchestration-Pack. Prüfe zuerst PROJECT_PROFILE.md und docs/TASK_LOG.md, falls vorhanden. Erstelle einen Plan, wähle passende Subagenten kostenbewusst aus und liefere am Ende Tests, Risiken, Erklärungen und nächste sichere Schritte.
+```
+
+## Wichtige Dateien
+
+| Pfad | Zweck |
+|---|---|
+| `AGENTS.md` | zentrale Orchestrator-Anweisung |
+| `.codex/config.toml` | Subagent-Parallelität und Laufzeitlimits |
+| `.codex/agents/*.toml` | Custom Agents für Rollen und Kosten-/Risikostufen |
+| `.agents/skills/*/SKILL.md` | progressive Workflows für Zieltypen |
+| `docs/CODEX_AGENT_ROUTING.md` | detaillierte Routing-Regeln |
+| `docs/CODEX_BUDGET_POLICY.md` | Budget-/Limitstrategie |
+| `docs/LONG_RUNNING_AGENT_PROTOCOL.md` | Checkpoint-/Resume-Protokoll |
+| `templates/` | Projektprofil, Task-Brief, Runbook, Entscheidung, Recherche |
+| `scripts/codex_budget_guard.py` | manuelle Budgetstatus-Datei pflegen und Empfehlungen anzeigen |
+| `scripts/create_repo_context.py` | Projektprofil aus Repo-Dateien vorschlagen |
+| `scripts/verify_codex_agent_pack.py` | Syntax- und Strukturprüfung |
+| `scripts/public_repo_sanity_check.py` | leichter Vorab-Scan gegen typische Public-Repo-Leaks |
+| `docs/PUBLIC_REPO_SAFETY.md` | Checkliste für öffentliche Repositories |
+
+## Budgetsteuerung
+
+Codex kann nicht zuverlässig hellsehen, wie viel Kapazität im Konto noch frei ist. Wenn eine offizielle Usage-Anzeige, ein Limit-Banner oder ein vom Nutzer geposteter Stand verfügbar ist, wird dieser verwendet. Sonst arbeitet das Paket mit einem manuellen Status in `.codex/state/budget_status.json`.
+
+Beispiele:
 
 ```bash
-./llm-usage-exporter snapshot --config examples/llm-usage-exporter.yaml
+python3 scripts/codex_budget_guard.py init
+python3 scripts/codex_budget_guard.py update --remaining-percent 35 --reset-at 2026-05-30T23:00:00+02:00
+python3 scripts/codex_budget_guard.py status
+python3 scripts/codex_budget_guard.py recommend --task-size heavy --risk high
 ```
 
-## Configuration
+## Public-Repo-Sicherheit
 
-`llm-usage-exporter` accepts JSON, YAML, or TOML configuration. Environment variables are allowed for common overrides.
+Diese Variante enthält bewusst keine privaten Kontextdateien. Private Topologie, IP-Pläne, Inventar, IAM-Details, lokale Budgetzustände und persönliche Daten gehören nicht in öffentliche Repositories.
 
-Example:
+Vor einem Push in ein öffentliches Repo ausführen:
 
-```yaml
-poll_interval: 60s
-json_output:
-  enabled: true
-  path: /var/lib/llm-usage-exporter/usage.snapshot.json
-prometheus:
-  enabled: true
-  listen_address: 127.0.0.1:9738
-providers:
-  - name: codex
-    type: codex
-    enabled: true
-    command: codex
-    args: ["appserver"]
+```bash
+python3 scripts/verify_codex_agent_pack.py
+python3 scripts/public_repo_sanity_check.py
 ```
 
-## CLI
+Der Scanner ist nur ein leichter Vorabcheck. Für echte Projekte zusätzlich einen etablierten Secret-Scanner wie `gitleaks` oder `trufflehog` nutzen. Textdateien haben leider keinen Selbsterhaltungstrieb.
 
-- `serve` runs periodic polling and exports to configured outputs.
-- `snapshot` runs one poll and prints snapshot to stdout.
-- `validate-config` validates and prints the effective configuration.
-- `version` prints the built version.
+## Validierung
 
-Useful docs:
+```bash
+python3 scripts/verify_codex_agent_pack.py
+python3 scripts/public_repo_sanity_check.py
+```
 
-- `docs/deployment.md`
-- `docs/operations.md`
-- `docs/release.md`
-- `docs/provider-policy/codex.md`
-
-## Development
-
-- `go test ./...`
-- `go vet ./...`
-- `gofmt` or IDE formatting before commits
-- release build can use `goreleaser` and requires a semver git tag (`v*`) for `Release` workflow
-- PRs are expected to carry an assigned GitHub milestone.
-- Maintainers can generate release-note drafts with the Milestone Notes workflow and
-  [`docs/milestones.md`](docs/milestones.md).
-- Repository governance bootstrap supports preview mode via `DRY_RUN=1` and also runs in GitHub Actions through `.github/workflows/bootstrap-github-org.yml` (including optional branch protection bootstrap).
-
-## Repository policy
-
-- Public documentation and interfaces are in English.
-- Private operational notes (if present) live outside tracked repository content.
-- For release planning and milestone operations, follow
-  [`docs/operations.md`](docs/operations.md) and [`docs/milestones.md`](docs/milestones.md).
-- Quick bootstrap for repo governance is `./scripts/bootstrap-github-org.sh`.
-
-## License
-
-Apache-2.0
+Erwartung: TOML-Dateien parsen, Pflichtfelder sind vorhanden, Skills haben `name` und `description`, zentrale Dateien existieren.

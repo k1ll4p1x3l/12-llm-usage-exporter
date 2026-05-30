@@ -1,0 +1,16 @@
+# Add this snippet to an existing public repo's .gitignore.
+.codex/state/
+LOCAL_CONTEXT.*
+PRIVATE_CONTEXT.*
+references/local/
+references/private/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.kdbx
+id_rsa*
+id_ed25519*
