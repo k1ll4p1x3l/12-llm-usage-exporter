@@ -1,0 +1,158 @@
+name: Milestone Release Notes
+
+on:
+  milestone:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      milestone_number:
+        description: "Milestone number to export into release notes"
+        required: false
+        type: number
+      milestone_title:
+        description: "Milestone title to export into release notes (alternative to number)"
+        required: false
+      release_tag:
+        description: "Optional tag to generate a draft GitHub release (e.g. v0.1.0)"
+        required: false
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  build-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare milestone notes
+        id: prepare
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {data: repository} = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const releaseTag = context.eventName === "workflow_dispatch"
+              ? (context.payload.inputs?.release_tag || "")
+              : "";
+
+            let milestoneRef = null;
+            let milestoneNumber = context.eventName === "workflow_dispatch"
+              ? Number(context.payload.inputs?.milestone_number)
+              : context.payload.milestone?.number;
+
+            if (context.eventName === "workflow_dispatch" && !milestoneNumber && context.payload.inputs?.milestone_title) {
+              const milestones = await github.paginate(github.rest.issues.listMilestonesForRepo, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "all",
+                direction: "asc",
+                per_page: 100,
+              }, (response) => response.data);
+              const targetTitle = context.payload.inputs.milestone_title.trim();
+              const selectedMilestone = milestones.find((m) => m.title === targetTitle);
+              if (!selectedMilestone) {
+                core.setFailed(`Milestone with title "${targetTitle}" not found.`);
+                return;
+              }
+              milestoneRef = `title "${targetTitle}"`;
+              milestoneNumber = Number(selectedMilestone.number);
+            } else if (context.eventName === "workflow_dispatch") {
+              milestoneRef = `number ${milestoneNumber || "unknown"}`;
+            }
+
+            if (!milestoneNumber) {
+              core.setFailed("Missing milestone selector. Provide milestone_number or milestone_title.");
+              return;
+            }
+
+            const {data: milestone} = await github.rest.issues.getMilestone({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              milestone_number: milestoneNumber,
+            });
+
+            const entries = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              milestone: milestone.number,
+              state: "all",
+              per_page: 100,
+            });
+
+            const issues = [];
+            const pullRequests = [];
+            const addItem = (item) => {
+              const target = item.pull_request ? pullRequests : issues;
+              const author = item.user?.login ? `@${item.user.login}` : "unknown";
+              const status = item.state === "closed" ? "closed" : "open";
+              const labels = (item.labels || [])
+                .map((l) => (typeof l === "string" ? l : l.name))
+                .join(", ");
+              const labelInfo = labels ? ` [${labels}]` : "";
+              target.push(`- [${status}] [#${item.number}](${item.html_url}) ${item.title} (${author})${labelInfo}`);
+            };
+            entries.forEach(addItem);
+
+            issues.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+            pullRequests.sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+
+            const content = [
+              `# Release notes draft for milestone ${milestone.title} (#${milestone.number})`,
+              "",
+              milestone.description ? `## Milestone context` : "",
+              milestone.description || "",
+              "",
+              `- Repository: ${repository.full_name}`,
+              `- State: ${milestone.state}`,
+              `- Due date: ${milestone.due_on || "unset"}`,
+              `- Items: ${entries.length}`,
+              "",
+              "## Pull requests",
+              ...(pullRequests.length ? pullRequests : ["- _(none)_"]),
+              "",
+              "## Issues",
+              ...(issues.length ? issues : ["- _(none)_"]),
+            ].filter((line) => line !== undefined && line !== null).join("\n");
+
+            const fileName = `milestone-${milestone.number}-release-notes.md`;
+            const fs = require("fs");
+            fs.writeFileSync(fileName, content);
+            core.setOutput("file_name", fileName);
+            core.setOutput("milestone_number", String(milestone.number));
+            core.setOutput("milestone_title", milestone.title);
+            core.setOutput("release_tag", releaseTag);
+            core.info(`Wrote ${fileName} for milestone ${milestone.title} (${milestoneRef || `#${milestone.number}`})`);
+
+      - name: Upload milestone notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: milestone-${{ steps.prepare.outputs.milestone_number }}-release-notes
+          path: ${{ steps.prepare.outputs.file_name }}
+          if-no-files-found: error
+
+      - name: Export draft release (optional)
+        if: steps.prepare.outputs.release_tag != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="${{ steps.prepare.outputs.release_tag }}"
+          title="${{ steps.prepare.outputs.release_tag }} · ${{ steps.prepare.outputs.milestone_title }}"
+          if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release edit "$tag" \
+              --repo "${{ github.repository }}" \
+              --title "$title" \
+              --notes-file "${{ steps.prepare.outputs.file_name }}" \
+              --target main
+          else
+            gh release create "$tag" \
+              --repo "${{ github.repository }}" \
+              --title "$title" \
+              --notes-file "${{ steps.prepare.outputs.file_name }}" \
+              --target main \
+              --draft
+          fi

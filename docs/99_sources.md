@@ -1,4 +1,4 @@
-# Quellenliste
+# Sources Log
 
 ## OpenAI Codex
 
@@ -10,7 +10,7 @@
 - OpenAI Developers: Codex Pricing — https://developers.openai.com/codex/pricing
 - OpenAI Codex source: rate_limits.rs — https://github.com/openai/codex/blob/main/codex-rs/codex-api/src/rate_limits.rs
 
-## Andere Provider
+## Other Providers
 
 - Anthropic Claude Code Authentication — https://docs.anthropic.com/en/docs/claude-code/authentication
 - Anthropic Help: Models, usage, and limits in Claude Code — https://support.anthropic.com/en/articles/11145838-models-usage-and-limits-in-claude-code
@@ -23,7 +23,7 @@
 - GitHub Copilot usage-based billing for organizations and enterprises — https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-organizations-and-enterprises
 - GitHub Copilot usage metrics API — https://docs.github.com/en/rest/copilot/copilot-usage-metrics
 
-## Monitoring, Security, Lizenz
+## Monitoring, Security, Licensing
 
 - Prometheus metric and label naming — https://prometheus.io/docs/practices/naming/
 - Prometheus writing exporters — https://prometheus.io/docs/instrumenting/writing_exporters/

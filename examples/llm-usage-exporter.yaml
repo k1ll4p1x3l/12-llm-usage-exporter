@@ -1,0 +1,15 @@
+poll_interval: 60s
+json_output:
+  enabled: true
+  path: /var/lib/llm-usage-exporter/usage.snapshot.json
+  pretty: true
+prometheus:
+  enabled: true
+  listen_address: 127.0.0.1:9738
+providers:
+  - name: codex
+    type: codex
+    enabled: true
+    command: codex
+    args:
+      - appserver

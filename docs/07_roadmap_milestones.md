@@ -1,44 +1,42 @@
-# Roadmap und Milestones
+# Roadmap
 
-## MVP-Definition
+## Release Milestones
 
-Ein lokal ausführbarer Go-Prozess erzeugt aus einem simulierten Codex-App-Server-Response einen validen JSON-Snapshot und Prometheus-Metriken. Noch keine echte Codex-Integration nötig.
+## Milestone 0.1 (MVP Foundation)
 
-## Pre-Alpha
+- Goal: runnable core with config, collect pipeline, JSON snapshot export, and Prometheus metrics.
+- Owners: core maintainers
+- Tracking:
+  - open issues and PRs should be assigned to milestone `0.1`.
+  - PRs must pass all checks in `CI`, `CodeQL`, and `Security`.
 
-Ziel: echte Codex-Integration auf Linux.
+## Milestone 0.2 (Readiness and Hardening)
 
-- Codex App Server Transport
-- `account/read` mit `refreshToken:false`
-- `account/rateLimits/read`
-- JSON Export
-- Prometheus Export
-- systemd-user Beispiel
-- Security Tests gegen verbotene Methoden
-- README + Security Policy
+- Goal: robust integration posture and operational resilience.
+- Planned outcomes:
+  - expanded scheduler, validation, and error path coverage,
+  - documented production-safe release workflow,
+  - expanded issue and PR templates plus milestone enforcement.
+- Tracking:
+  - open issues and PRs should be assigned to milestone `0.2`.
 
-## Alpha
+## Milestone 0.3 (Provider Expansion)
 
-- stabilisierte Konfiguration
-- Integrationstests mit mehreren Codex-Versionen
-- optionale App-Server-Notification-Unterstützung
-- Paketierung für Linux amd64/arm64
-- erste experimentelle Research-Collector für Claude/Gemini/Cursor ohne Release-Versprechen
+- Goal: second-provider onboarding with policy and collection coverage.
+- Planned outcomes:
+  - new provider policy document,
+  - collector contract tests for schema drift,
+  - integration documentation in `docs/provider-policy`.
+- Tracking:
+  - open issues and PRs should be assigned to milestone `0.3`.
 
-## Beta
+## Milestone process
 
-- Provider-SDK stabilisieren
-- Windows/macOS prüfen
-- InfluxDB/OpenTelemetry optional
-- Grafana Beispiel-Dashboard als separater Ordner, nicht Primärprodukt
+- Milestones are planning containers in GitHub and should reflect release intent, not just issue buckets.
+- Always include representative changes in changelog entries before closing a milestone.
+- Keep risk flags, dependency updates, and docs adjustments in the same milestone.
+- See [`docs/milestones.md`](docs/milestones.md) for maintainer-level milestone workflows.
 
-## Milestones
+## Current milestone
 
-| Milestone | Ergebnis |
-|---|---|
-| M0 Research Freeze | Quellen, Scope, Security-Regeln final |
-| M1 Skeleton | Repo-Struktur, CI, Docs, Modelltypen |
-| M2 Mock Collector | Tests mit Fixtures, JSON + Prometheus |
-| M3 Codex Integration | App Server read-only integriert |
-| M4 Pre-Alpha Release | Linux Binary, Checksums, SBOM, Release Notes |
-| M5 Provider Research | Claude/Gemini/Cursor/Copilot Evaluierungsberichte |
+- In progress: MVP runnable scaffold with configuration, Codex collector pipeline, JSON and Prometheus exports.

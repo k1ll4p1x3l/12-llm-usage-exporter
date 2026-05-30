@@ -1,0 +1,21 @@
+# Build artifacts
+/bin
+/dist
+/coverage
+*.out
+
+# Go module cache leftovers in this repo
+/vendor
+
+# Generated files
+/llm-usage-exporter
+*.log
+
+# Local debug/config files
+.env
+tmp/
+cache/
+.private/
+
+# Snapshot outputs
+usage.snapshot.json

@@ -1,20 +1,37 @@
 # AGENTS.md
 
-## Zweck dieser Datei
+## Scope
 
-Diese Datei enthält verbindliche Arbeitsanweisungen für Codex und andere Coding Agents in diesem Repository. Sie soll Codex ermöglichen, dieses Projekt weitgehend autonom, reproduzierbar und sicher weiterzuentwickeln, ohne bei jeder Kleinigkeit menschliche Zeremonien zu verlangen. Menschen sind schon langsam genug.
+This repository builds `llm-usage-exporter`, a local data translator for usage and quota telemetry from LLM coding agents.
 
-Projektname: `llm-usage-exporter`  
-Projektstatus: Konzept / Pre-Alpha-Planung  
-Primärsprache der Implementierung: Go  
-Primärplattform Pre-Alpha: Linux  
-Hauptziel: lokale Nutzungs-, Quota-, Credit- und Reset-Daten von LLM-/Coding-Agent-Installationen erfassen, normalisieren und exportieren.
+- Project name: `llm-usage-exporter`
+- Language: Go
+- Primary pre-alpha platform: Linux
+- Main objective: collect usage, limit, credit, and reset data and export it in neutral JSON and Prometheus formats
+- Explicitly out of scope: authentication clients, web dashboards, web scraping, token vaulting, or quota bypass
 
-Der Agent ist ein Datenübersetzer, kein Authentifizierungsclient, kein Dashboard und kein GUI-Projekt.
+## Architecture
 
 ```text
-Provider-spezifische lokale Datenquelle
+Provider data source
   -> Collector
-  -> neutrales internes Datenmodell
+  -> Neutral model
   -> Exporter
-  -> Monitoring-System
+  -> Monitoring
+```
+
+## Core policy
+
+- The project must be read-only with respect to provider sessions and credentials.
+- No credential reading, rotation, or persistence in this project.
+- No login, logout, token refresh, or MITM/proxy collection paths.
+- Collectors must only use local provider paths documented in their provider policy.
+- Any design change that increases risk must be recorded in project docs and justified.
+
+## Operating rules
+
+- Keep code changes in small, reviewable diffs.
+- Any repository change should be reflected in `CHANGELOG.md` and `README.md`.
+- Run lint/test commands in the affected scope before merging release changes.
+- Dangerous operations require explicit user confirmation.
+- Keep public documentation in English; operational private notes are external to this repository.

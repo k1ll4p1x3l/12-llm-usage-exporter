@@ -1,0 +1,13 @@
+[Unit]
+Description=LLM Usage Exporter
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/llm-usage-exporter serve --config %h/.config/llm-usage-exporter/config.yaml
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

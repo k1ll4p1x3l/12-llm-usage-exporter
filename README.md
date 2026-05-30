@@ -1,40 +1,102 @@
 # llm-usage-exporter
 
-**Status:** Konzept / Pre-Alpha-Planung  
-**Primärziel:** Lokale Nutzungs-, Quota-, Credit- und Reset-Daten von LLM-/Coding-Agent-Installationen erfassen, normalisieren und in Monitoring-Formate exportieren.  
-**Pre-Alpha-Scope:** OpenAI Codex, Linux, Go, JSON-Datei, Prometheus `/metrics`, keine GUI, kein Dashboard, keine eigene Authentifizierung.
+`llm-usage-exporter` is a local telemetry adapter that reads usage and quota data from coding agents and exports normalized snapshots to JSON and Prometheus.
 
-## Projektprinzip
+## Current status
 
-`llm-usage-exporter` ist ein Datenübersetzer, kein Ersatzclient:
+- Development stage: pre-alpha
+- Primary platform: Linux
+- Primary language: Go
+- Primary provider: OpenAI Codex (read-only)
+
+## Architecture
 
 ```text
-Provider-spezifische lokale Datenquelle
-  -> Collector
-  -> neutrales internes Datenmodell
-  -> Exporter
-  -> Monitoring-Systeme wie Prometheus/Grafana
+Provider source (e.g. Codex App Server)
+  -> collector
+  -> neutral model
+  -> exporters (JSON file, Prometheus)
+  -> local monitoring
 ```
 
-Der Agent darf vorhandene lokale Provider-Sessions nur beobachtend nutzen. Er darf keine OAuth-Refreshes auslösen, keine Tokens rotieren, keine Credentials speichern und keine Limits umgehen.
+The project is intentionally a data translator, not a credential manager, dashboard, or authentication service.
 
-## Wichtigste Architekturentscheidung
+## Key guarantees
 
-Für OpenAI Codex ist die bevorzugte Pre-Alpha-Quelle der offizielle Codex App Server bzw. dessen JSON-RPC-Methoden `account/read` und `account/rateLimits/read`, mit `refreshToken:false` und ohne Login-/Refresh-/Token-Flows. Direkte Auswertung von `~/.codex/auth.json`, Header-Sniffing oder UI-Scraping ist als Standardpfad ausgeschlossen.
+- No credential persistence.
+- No token refresh/login/logout flows.
+- No web UI scraping.
+- No proxy/MITM collection.
+- Unknown provider schema results in explicit error status snapshots.
 
-## Repository-Inhalt
+## Quick start
 
-- `docs/00_research_dossier.md` – Recherche, Quellenlage, Vergleich der Provider
-- `docs/01_lastenheft.md` – vollständiges technisches Lastenheft
-- `docs/02_architecture.md` – Zielarchitektur und Komponenten
-- `docs/03_security_concept.md` – Sicherheitsmodell und Threat Model
-- `docs/04_provider_abstraction.md` – Provider-Plugin-Konzept
-- `docs/05_data_model.md` – neutrales Datenmodell und Prometheus-Metriken
-- `docs/06_risk_register.md` – Risikoregister
-- `docs/07_roadmap_milestones.md` – Roadmap, MVP, Pre-Alpha, Alpha
-- `docs/08_codex_implementation_brief.md` – Arbeitsbrief für spätere Codex-Umsetzung
-- `.github/workflows/*` – CI-/Security-Workflow-Vorschläge
+```bash
+go build ./cmd/llm-usage-exporter
+./llm-usage-exporter serve --config config.yaml
+```
 
-## Lizenzempfehlung
+Run a one-shot snapshot:
 
-Apache-2.0 wird empfohlen, weil das Projekt als Integrations- und Infrastrukturkomponente von einer permissiven Lizenz mit explizitem Patent-Grant profitiert.
+```bash
+./llm-usage-exporter snapshot --config examples/llm-usage-exporter.yaml
+```
+
+## Configuration
+
+`llm-usage-exporter` accepts JSON, YAML, or TOML configuration. Environment variables are allowed for common overrides.
+
+Example:
+
+```yaml
+poll_interval: 60s
+json_output:
+  enabled: true
+  path: /var/lib/llm-usage-exporter/usage.snapshot.json
+prometheus:
+  enabled: true
+  listen_address: 127.0.0.1:9738
+providers:
+  - name: codex
+    type: codex
+    enabled: true
+    command: codex
+    args: ["appserver"]
+```
+
+## CLI
+
+- `serve` runs periodic polling and exports to configured outputs.
+- `snapshot` runs one poll and prints snapshot to stdout.
+- `validate-config` validates and prints the effective configuration.
+- `version` prints the built version.
+
+Useful docs:
+
+- `docs/deployment.md`
+- `docs/operations.md`
+- `docs/release.md`
+- `docs/provider-policy/codex.md`
+
+## Development
+
+- `go test ./...`
+- `go vet ./...`
+- `gofmt` or IDE formatting before commits
+- release build can use `goreleaser` and requires a semver git tag (`v*`) for `Release` workflow
+- PRs are expected to carry an assigned GitHub milestone.
+- Maintainers can generate release-note drafts with the Milestone Notes workflow and
+  [`docs/milestones.md`](docs/milestones.md).
+- Repository governance bootstrap supports preview mode via `DRY_RUN=1` and also runs in GitHub Actions through `.github/workflows/bootstrap-github-org.yml` (including optional branch protection bootstrap).
+
+## Repository policy
+
+- Public documentation and interfaces are in English.
+- Private operational notes (if present) live outside tracked repository content.
+- For release planning and milestone operations, follow
+  [`docs/operations.md`](docs/operations.md) and [`docs/milestones.md`](docs/milestones.md).
+- Quick bootstrap for repo governance is `./scripts/bootstrap-github-org.sh`.
+
+## License
+
+Apache-2.0

@@ -1,0 +1,48 @@
+name: Bootstrap GitHub Org Metadata
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview planned changes without mutating GitHub data."
+        type: boolean
+        default: false
+      apply_branch_protection:
+        description: "Optionally apply branch protection rules for the default branch."
+        type: boolean
+        default: false
+      protection_branch:
+        description: "Target branch for branch protection."
+        type: string
+        default: main
+      required_status_checks:
+        description: "JSON array for required check names."
+        type: string
+        default: '["ci","analyze","vulncheck","check-milestone","ensure-changelog"]'
+      require_linear_history:
+        description: "Enforce linear history in branch protection."
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  administration: write
+  issues: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap milestones and labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          REQUIRE_BRANCH_PROTECTION: ${{ inputs.apply_branch_protection && '1' || '0' }}
+          PROTECTION_BRANCH: ${{ inputs.protection_branch }}
+          REQUIRED_STATUS_CHECKS_OVERRIDE: ${{ inputs.required_status_checks }}
+          REQUIRE_LINEAR_HISTORY: ${{ inputs.require_linear_history && '1' || '0' }}
+        run: ./scripts/bootstrap-github-org.sh
