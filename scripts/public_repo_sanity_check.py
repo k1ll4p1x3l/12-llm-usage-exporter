@@ -30,8 +30,18 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 ]
 
 
+SAFE_PERMISSION_VALUES = {'read', 'write', 'none'}
+
+
 def is_text(path: Path) -> bool:
     return path.name in TEXT_NAMES or path.suffix.lower() in TEXT_SUFFIXES
+
+
+def is_false_positive(label: str, line: str) -> bool:
+    if label != 'obvious assigned secret':
+        return False
+    key_value = re.match(r'(?i)^\s*[a-z0-9_.-]*token\s*:\s*([a-z-]+)\s*$', line)
+    return bool(key_value and key_value.group(1).lower() in SAFE_PERMISSION_VALUES)
 
 
 def main() -> int:
@@ -63,7 +73,7 @@ def main() -> int:
             continue
         for lineno, line in enumerate(text.splitlines(), 1):
             for label, pattern in PATTERNS:
-                if pattern.search(line):
+                if pattern.search(line) and not is_false_positive(label, line):
                     findings.append(f'{rel}:{lineno}: {label}: {line[:180]}')
 
     if findings:

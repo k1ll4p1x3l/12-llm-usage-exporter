@@ -1,0 +1,15 @@
+# Project-scoped Codex configuration for this orchestration pack.
+# Start important sessions explicitly, for example:
+#   codex -m gpt-5.5
+# Do not set a forced model here unless this repository should always use one.
+# model = "gpt-5.5"
+
+[agents]
+# Keep fan-out useful but not absurd. Increase manually only for trusted, low-risk work.
+max_threads = 4
+
+# Root session is depth 0. Depth 1 allows direct subagents but prevents subagents from spawning subagents.
+max_depth = 1
+
+# Default maximum runtime for batch-style agent jobs, in seconds.
+job_max_runtime_seconds = 1800

@@ -1,0 +1,23 @@
+# Example only. Rename to .rules after testing with `codex execpolicy check`.
+# Rules are experimental. Keep project-local rules conservative.
+
+prefix_rule(
+    pattern = ["mkfs"],
+    decision = "forbidden",
+    justification = "Filesystem creation is destructive. Prepare a reviewed plan instead.",
+    match = ["mkfs /dev/sdb"],
+)
+
+prefix_rule(
+    pattern = ["zpool", "destroy"],
+    decision = "forbidden",
+    justification = "ZFS pool destruction requires explicit manual execution outside agent automation.",
+    match = ["zpool destroy tank"],
+)
+
+prefix_rule(
+    pattern = ["iptables"],
+    decision = "prompt",
+    justification = "Firewall changes can break connectivity and require review.",
+    match = ["iptables -L"],
+)
