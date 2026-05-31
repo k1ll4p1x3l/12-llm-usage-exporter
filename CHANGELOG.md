@@ -62,6 +62,7 @@
 - Clarified the 0.3 provider-policy milestone, added an explicit 0.4 operations milestone, and documented Codex `initialize` as JSON-RPC session setup.
 - Moved generated manual environment remediation steps to the ignored `.codex/state` area by default.
 - Logged closure of superseded Dependabot pull requests after their updates were consolidated into PR #8.
+- Recorded the final merged-main verification checkpoint for the 0.1-0.4 implementation baseline.
 
 ## 0.0.1
 

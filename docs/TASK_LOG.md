@@ -231,3 +231,53 @@ Continue on branch `codex/complete-0.1-0.4`. Verify PR #8 review state and
 checks. If an approving review exists, merge through GitHub's protected PR path,
 pull `main`, run `./scripts/check.sh`, and update `docs/TASK_LOG.md`. If review
 is still missing, do not merge or bypass branch protection.
+
+## Checkpoint 2026-05-31 04:00 Europe/Berlin
+
+### Goal
+
+Record the merged and locally verified `main` state for the 0.1-0.4
+implementation baseline.
+
+### Completed
+
+- PR #8 was merged into `main` as merge commit
+  `75452448c338760deae0f5be5c0daf8f329ccfd9`.
+- Local `main` was fast-forwarded from `a219196` to `7545244`.
+- The merged baseline includes:
+  - MVP CLI, config, Codex collector, JSON export, and Prometheus export,
+  - runtime hardening and schema/error-path tests,
+  - provider policy coverage with Claude Code safely deferred,
+  - GitHub Actions, CodeQL, vulnerability checks, milestone checks, changelog
+    enforcement, release-note automation, CODEOWNERS, and repository operation
+    scripts,
+  - consolidated Dependabot updates for the current 0.1-0.4 baseline.
+
+### Changed Files
+
+- `docs/TASK_LOG.md`
+
+### Tests / Checks
+
+- `git pull --ff-only origin main`: pass.
+- `./scripts/check.sh`: pass on merged `main`.
+
+### Risks / Open Points
+
+- The final checkpoint itself is a documentation-only follow-up and must be
+  merged after the verified baseline so the task log reflects the true terminal
+  state.
+- Claude Code remains intentionally deferred until a safe local read-only quota
+  source exists.
+
+### Next Safe Step
+
+- Merge this final task-log checkpoint, pull `main`, run `./scripts/check.sh`
+  once more, then perform the completion audit.
+
+### Resume Prompt
+
+Continue from branch `codex/final-0.4-checkpoint`. This branch only records the
+final long-running-goal checkpoint after PR #8 merged. Run `./scripts/check.sh`,
+merge the checkpoint through the repository's protected path or an explicitly
+approved admin path, then verify `main` and complete the goal audit.
