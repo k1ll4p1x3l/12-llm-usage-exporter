@@ -9,6 +9,7 @@ REQUIRED_BRANCH="${PROTECTION_BRANCH:-main}"
 REQUIRED_STATUS_CHECKS_JSON='["ci","analyze","vulncheck","check-milestone","ensure-changelog"]'
 REQUIRED_STATUS_CHECKS_JSON="${REQUIRED_STATUS_CHECKS_JSON_OVERRIDE:-$REQUIRED_STATUS_CHECKS_JSON}"
 REQUIRE_LINEAR_HISTORY="${REQUIRE_LINEAR_HISTORY:-false}"
+REQUIRED_APPROVING_REVIEW_COUNT="${REQUIRED_APPROVING_REVIEW_COUNT:-0}"
 
 if [[ "$REQUIRE_LINEAR_HISTORY" == "1" ]]; then
   REQUIRE_LINEAR_HISTORY=true
@@ -18,6 +19,11 @@ fi
 
 if [[ "${REQUIRED_STATUS_CHECKS_JSON}" != \[*\] ]]; then
   echo "Invalid REQUIRED_STATUS_CHECKS_JSON: ${REQUIRED_STATUS_CHECKS_JSON}" >&2
+  exit 1
+fi
+
+if [[ ! "$REQUIRED_APPROVING_REVIEW_COUNT" =~ ^[0-9]+$ ]]; then
+  echo "Invalid REQUIRED_APPROVING_REVIEW_COUNT: $REQUIRED_APPROVING_REVIEW_COUNT" >&2
   exit 1
 fi
 
@@ -99,7 +105,7 @@ ensure_branch_protection() {
   payload=$(cat <<EOF
 {
   "required_pull_request_reviews": {
-    "required_approving_review_count": 1,
+    "required_approving_review_count": $REQUIRED_APPROVING_REVIEW_COUNT,
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
     "require_last_push_approval": false

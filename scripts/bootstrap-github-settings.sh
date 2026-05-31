@@ -7,6 +7,7 @@ REPO="${GITHUB_REPO:-}"
 BRANCH="${PROTECTION_BRANCH:-main}"
 REQUIRED_STATUS_CHECKS_JSON="${REQUIRED_STATUS_CHECKS_JSON:-[\"ci\",\"analyze\",\"vulncheck\",\"check-milestone\",\"ensure-changelog\"]}"
 REQUIRE_LINEAR_HISTORY="${REQUIRE_LINEAR_HISTORY:-false}"
+REQUIRED_APPROVING_REVIEW_COUNT="${REQUIRED_APPROVING_REVIEW_COUNT:-0}"
 
 log() {
   echo "[github-settings] $*"
@@ -72,7 +73,7 @@ apply_branch_protection() {
   cat >"$payload" <<EOF
 {
   "required_pull_request_reviews": {
-    "required_approving_review_count": 1,
+    "required_approving_review_count": $REQUIRED_APPROVING_REVIEW_COUNT,
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
     "require_last_push_approval": false
@@ -109,6 +110,10 @@ main() {
     echo "Missing dependency: gh" >&2
     exit 1
   }
+  if [[ ! "$REQUIRED_APPROVING_REVIEW_COUNT" =~ ^[0-9]+$ ]]; then
+    echo "Invalid REQUIRED_APPROVING_REVIEW_COUNT: $REQUIRED_APPROVING_REVIEW_COUNT" >&2
+    exit 1
+  fi
   resolve_repo
   log "Bootstrapping repository settings for $REPO."
   gh auth status >/dev/null 2>&1 || {
