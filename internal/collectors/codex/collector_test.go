@@ -1,9 +1,82 @@
 package codex
 
 import (
+	"context"
+	"encoding/json"
 	"testing"
 	"time"
+
+	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/model"
 )
+
+type fakeRPCClient struct {
+	calls []rpcCall
+	errs  map[string]error
+	raw   map[string]json.RawMessage
+}
+
+type rpcCall struct {
+	method string
+	params any
+}
+
+func (f *fakeRPCClient) Call(_ context.Context, method string, params any, out any) error {
+	f.calls = append(f.calls, rpcCall{method: method, params: params})
+	if err := f.errs[method]; err != nil {
+		return err
+	}
+	if out == nil {
+		return nil
+	}
+	raw := f.raw[method]
+	if rm, ok := out.(*json.RawMessage); ok {
+		*rm = append((*rm)[0:0], raw...)
+		return nil
+	}
+	if len(raw) == 0 {
+		return nil
+	}
+	return json.Unmarshal(raw, out)
+}
+
+func (f *fakeRPCClient) Close() error { return nil }
+
+func TestCollectUsesReadOnlyCodexCalls(t *testing.T) {
+	t.Parallel()
+
+	client := &fakeRPCClient{
+		errs: map[string]error{},
+		raw: map[string]json.RawMessage{
+			policyMethodAccountRead:    json.RawMessage(`{"account":{"accountId":"acct-123","planType":"pro"}}`),
+			policyMethodRateLimitsRead: json.RawMessage(`{"rateLimits":[{"limitId":"rpm","limitName":"requests","windowDurationMins":1,"used":2,"limit":10,"usedPercent":20}]}`),
+		},
+	}
+
+	collector := NewCollector("codex-main", client)
+	snapshot, err := collector.Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect returned error: %v", err)
+	}
+	if snapshot.Status != model.ProviderStatusOK {
+		t.Fatalf("expected ok snapshot, got %q", snapshot.Status)
+	}
+	if snapshot.Account == nil || snapshot.Account.ProviderAccountID == "acct-123" {
+		t.Fatalf("expected hashed account id, got %#v", snapshot.Account)
+	}
+	if len(snapshot.UsageWindows) != 1 || snapshot.UsageWindows[0].LimitID != "rpm" {
+		t.Fatalf("unexpected windows: %#v", snapshot.UsageWindows)
+	}
+	if len(client.calls) != 3 {
+		t.Fatalf("expected initialize/account/rate limit calls, got %#v", client.calls)
+	}
+	if client.calls[1].method != policyMethodAccountRead {
+		t.Fatalf("unexpected second call: %#v", client.calls[1])
+	}
+	params, ok := client.calls[1].params.(map[string]any)
+	if !ok || params["refreshToken"] != false {
+		t.Fatalf("account/read must pass refreshToken=false, got %#v", client.calls[1].params)
+	}
+}
 
 func TestNormalizeRateLimit(t *testing.T) {
 	t.Parallel()
@@ -52,10 +125,11 @@ func TestNormalizePercentFallback(t *testing.T) {
 	t.Parallel()
 
 	record := map[string]any{
-		"limitId":     "x",
-		"used":        1.0,
-		"limit":       4.0,
-		"usedPercent": -1,
+		"limitId":            "x",
+		"windowDurationMins": 1.0,
+		"used":               1.0,
+		"limit":              4.0,
+		"usedPercent":        -1,
 	}
 	parsed, err := normalizeRateLimit(record)
 	if err != nil {
@@ -66,37 +140,30 @@ func TestNormalizePercentFallback(t *testing.T) {
 	}
 }
 
-func TestGetFloatAndIntHelpers(t *testing.T) {
+func TestGetFloatHelper(t *testing.T) {
 	t.Parallel()
 
 	record := map[string]any{
-		"i": 3,
 		"f": 1.25,
-	}
-	if getInt(record, "i") != 3 {
-		t.Fatalf("getInt failed")
 	}
 	if getFloat(record, "f") != 1.25 {
 		t.Fatalf("getFloat failed")
 	}
 }
 
-func TestNormalizeRateLimitIgnoresBadResetTime(t *testing.T) {
+func TestNormalizeRateLimitRejectsBadResetTime(t *testing.T) {
 	t.Parallel()
 
 	record := map[string]any{
-		"limitId":     "bad",
-		"used":        1.0,
-		"limit":       2.0,
-		"resetsAt":    "not-a-time",
-		"usedPercent": 50.0,
+		"limitId":            "bad",
+		"windowDurationMins": 1.0,
+		"used":               1.0,
+		"limit":              2.0,
+		"resetsAt":           "not-a-time",
+		"usedPercent":        50.0,
 	}
-	parsed, err := normalizeRateLimit(record)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if parsed.resetsAt != nil {
-		t.Fatalf("expected invalid reset time to be ignored")
+	if _, err := normalizeRateLimit(record); err == nil {
+		t.Fatal("expected invalid reset time error")
 	}
 }
 
@@ -115,10 +182,11 @@ func TestRateLimitResetsAtParse(t *testing.T) {
 	t.Parallel()
 
 	record := map[string]any{
-		"limitId":  "id",
-		"used":     0.0,
-		"limit":    10.0,
-		"resetsAt": "2026-06-01T00:00:00Z",
+		"limitId":            "id",
+		"windowDurationMins": 1.0,
+		"used":               0.0,
+		"limit":              10.0,
+		"resetsAt":           "2026-06-01T00:00:00Z",
 	}
 	parsed, err := normalizeRateLimit(record)
 	if err != nil {
@@ -129,5 +197,32 @@ func TestRateLimitResetsAtParse(t *testing.T) {
 	}
 	if parsed.resetsAt.Sub(time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)) != 0 {
 		t.Fatalf("unexpected reset time: %v", parsed.resetsAt)
+	}
+}
+
+func TestNormalizeRateLimitRejectsMissingRequiredCounters(t *testing.T) {
+	t.Parallel()
+
+	record := map[string]any{
+		"limitId":            "id",
+		"windowDurationMins": 1.0,
+		"limit":              10.0,
+	}
+	if _, err := normalizeRateLimit(record); err == nil {
+		t.Fatal("expected missing used error")
+	}
+}
+
+func TestNormalizeRateLimitRejectsNonIntegerCounter(t *testing.T) {
+	t.Parallel()
+
+	record := map[string]any{
+		"limitId":            "id",
+		"windowDurationMins": 1.5,
+		"used":               1.0,
+		"limit":              10.0,
+	}
+	if _, err := normalizeRateLimit(record); err == nil {
+		t.Fatal("expected non-integer window error")
 	}
 }

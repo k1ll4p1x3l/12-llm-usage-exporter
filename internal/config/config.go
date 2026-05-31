@@ -49,18 +49,28 @@ type PrometheusRawConfig struct {
 }
 
 type ProviderConfig struct {
+	Name    string        `json:"name" yaml:"name" toml:"name"`
+	Type    string        `json:"type" yaml:"type" toml:"type"`
+	Enabled bool          `json:"enabled" yaml:"enabled" toml:"enabled"`
+	Command string        `json:"command" yaml:"command" toml:"command"`
+	Args    []string      `json:"args" yaml:"args" toml:"args"`
+	Timeout time.Duration `json:"timeout" yaml:"timeout" toml:"timeout"`
+}
+
+type rawProviderConfig struct {
 	Name    string   `json:"name" yaml:"name" toml:"name"`
 	Type    string   `json:"type" yaml:"type" toml:"type"`
 	Enabled bool     `json:"enabled" yaml:"enabled" toml:"enabled"`
 	Command string   `json:"command" yaml:"command" toml:"command"`
 	Args    []string `json:"args" yaml:"args" toml:"args"`
+	Timeout *string  `json:"timeout" yaml:"timeout" toml:"timeout"`
 }
 
 type rawConfig struct {
 	PollInterval *string              `json:"poll_interval" yaml:"poll_interval" toml:"poll_interval"`
 	JSONOutput   *JSONOutputRawConfig `json:"json_output" yaml:"json_output" toml:"json_output"`
 	Prometheus   *PrometheusRawConfig `json:"prometheus" yaml:"prometheus" toml:"prometheus"`
-	Providers    []ProviderConfig     `json:"providers" yaml:"providers" toml:"providers"`
+	Providers    []rawProviderConfig  `json:"providers" yaml:"providers" toml:"providers"`
 }
 
 func Default() Config {
@@ -82,6 +92,7 @@ func Default() Config {
 				Enabled: true,
 				Command: "codex",
 				Args:    []string{"appserver"},
+				Timeout: 10 * time.Second,
 			},
 		},
 	}
@@ -145,7 +156,11 @@ func Load(path string) (Config, error) {
 		}
 	}
 	if len(rawCfg.Providers) > 0 {
-		cfg.Providers = rawCfg.Providers
+		providers, err := normalizeProviders(rawCfg.Providers)
+		if err != nil {
+			return Config{}, err
+		}
+		cfg.Providers = providers
 	}
 
 	if err := applyEnvOverrides(&cfg); err != nil {
@@ -158,9 +173,13 @@ func (cfg *Config) Validate() error {
 	if cfg.PollInterval < 10*time.Second {
 		return fmt.Errorf("poll_interval too low: %s", cfg.PollInterval)
 	}
+	if cfg.JSONOutput.Enabled && strings.TrimSpace(cfg.JSONOutput.Path) == "" {
+		return fmt.Errorf("json_output enabled but path is empty")
+	}
 	if len(cfg.Providers) == 0 {
 		return fmt.Errorf("at least one provider is required")
 	}
+	enabledProviders := 0
 	for i, p := range cfg.Providers {
 		if p.Type == "" {
 			return fmt.Errorf("provider[%d] has missing type", i)
@@ -168,11 +187,45 @@ func (cfg *Config) Validate() error {
 		if p.Name == "" {
 			return fmt.Errorf("provider[%d] has missing name", i)
 		}
+		if p.Type != "codex" {
+			return fmt.Errorf("provider[%d] has unsupported type: %s", i, p.Type)
+		}
+		if p.Enabled {
+			enabledProviders++
+		}
+		if p.Enabled && p.Timeout < 0 {
+			return fmt.Errorf("provider[%d] timeout must not be negative", i)
+		}
+	}
+	if enabledProviders == 0 {
+		return fmt.Errorf("at least one provider must be enabled")
 	}
 	if cfg.Prometheus.Enabled && cfg.Prometheus.ListenAddress == "" {
 		return fmt.Errorf("prometheus enabled but listen_address is empty")
 	}
 	return nil
+}
+
+func normalizeProviders(rawProviders []rawProviderConfig) ([]ProviderConfig, error) {
+	providers := make([]ProviderConfig, 0, len(rawProviders))
+	for i, raw := range rawProviders {
+		provider := ProviderConfig{
+			Name:    raw.Name,
+			Type:    raw.Type,
+			Enabled: raw.Enabled,
+			Command: raw.Command,
+			Args:    raw.Args,
+		}
+		if raw.Timeout != nil {
+			timeout, err := parseDuration(*raw.Timeout)
+			if err != nil {
+				return nil, fmt.Errorf("provider[%d] invalid timeout: %w", i, err)
+			}
+			provider.Timeout = timeout
+		}
+		providers = append(providers, provider)
+	}
+	return providers, nil
 }
 
 func parseDuration(raw string) (time.Duration, error) {

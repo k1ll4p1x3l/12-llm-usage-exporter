@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	defaultTimeout = 10 * time.Second
+	defaultTimeout         = 10 * time.Second
+	defaultMaxMessageBytes = 1024 * 1024
 )
 
 type rpcRequest struct {
@@ -45,9 +46,10 @@ type RPCClient interface {
 }
 
 type AppServerConfig struct {
-	Command string
-	Args    []string
-	Timeout time.Duration
+	Command         string
+	Args            []string
+	Timeout         time.Duration
+	MaxMessageBytes int
 }
 
 type AppServerClient struct {
@@ -64,9 +66,10 @@ type AppServerClient struct {
 func NewAppServerClient(cfg AppServerConfig) *AppServerClient {
 	return &AppServerClient{
 		cfg: AppServerConfig{
-			Command: cfg.Command,
-			Args:    cfg.Args,
-			Timeout: cfg.Timeout,
+			Command:         cfg.Command,
+			Args:            cfg.Args,
+			Timeout:         cfg.Timeout,
+			MaxMessageBytes: cfg.MaxMessageBytes,
 		},
 	}
 }
@@ -81,16 +84,20 @@ func (c *AppServerClient) ensureStarted(ctx context.Context) error {
 	if c.cfg.Timeout <= 0 {
 		c.cfg.Timeout = defaultTimeout
 	}
+	if c.cfg.MaxMessageBytes <= 0 {
+		c.cfg.MaxMessageBytes = defaultMaxMessageBytes
+	}
 
 	command := strings.TrimSpace(c.cfg.Command)
 	if command == "" {
 		command = "codex"
 	}
 
-	commandCtx, cancel := context.WithTimeout(ctx, c.cfg.Timeout)
-	defer cancel()
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("start appserver: %w", err)
+	}
 
-	cmd := exec.CommandContext(commandCtx, command, c.cfg.Args...)
+	cmd := exec.Command(command, c.cfg.Args...)
 	cmd.Stderr = os.Stderr
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -117,7 +124,11 @@ func (c *AppServerClient) Call(ctx context.Context, method string, params any, o
 	if method == "" {
 		return fmt.Errorf("empty method")
 	}
-	if err := c.ensureStarted(ctx); err != nil {
+
+	callCtx, cancel := c.contextWithTimeout(ctx)
+	defer cancel()
+
+	if err := c.ensureStarted(callCtx); err != nil {
 		return err
 	}
 
@@ -136,7 +147,7 @@ func (c *AppServerClient) Call(ctx context.Context, method string, params any, o
 		return fmt.Errorf("write request: %w", err)
 	}
 
-	raw, err := c.readMessage()
+	raw, err := c.readMessageWithContext(callCtx)
 	if err != nil {
 		return err
 	}
@@ -144,6 +155,9 @@ func (c *AppServerClient) Call(ctx context.Context, method string, params any, o
 	var response rpcResponse
 	if err := json.Unmarshal(raw, &response); err != nil {
 		return fmt.Errorf("parse response: %w", err)
+	}
+	if response.JSONRPC != "2.0" {
+		return fmt.Errorf("invalid jsonrpc version: %q", response.JSONRPC)
 	}
 	if response.ID != id {
 		return fmt.Errorf("response id mismatch: expected %d got %d", id, response.ID)
@@ -167,9 +181,49 @@ func (c *AppServerClient) Call(ctx context.Context, method string, params any, o
 	return nil
 }
 
+func (c *AppServerClient) contextWithTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
+	if _, ok := ctx.Deadline(); ok {
+		return ctx, func() {}
+	}
+	return context.WithTimeout(ctx, c.timeout())
+}
+
+func (c *AppServerClient) timeout() time.Duration {
+	if c.cfg.Timeout <= 0 {
+		return defaultTimeout
+	}
+	return c.cfg.Timeout
+}
+
+func (c *AppServerClient) readMessageWithContext(ctx context.Context) ([]byte, error) {
+	result := make(chan struct {
+		payload []byte
+		err     error
+	}, 1)
+	go func() {
+		payload, err := c.readMessage()
+		result <- struct {
+			payload []byte
+			err     error
+		}{payload: payload, err: err}
+	}()
+
+	select {
+	case <-ctx.Done():
+		c.stopLocked()
+		return nil, fmt.Errorf("read response: %w", ctx.Err())
+	case read := <-result:
+		return read.payload, read.err
+	}
+}
+
 func (c *AppServerClient) readMessage() ([]byte, error) {
+	reader := c.reader
+	if reader == nil {
+		return nil, fmt.Errorf("read response: client is not started")
+	}
 	for {
-		line, err := c.reader.ReadString('\n')
+		line, err := readLineLimited(reader, c.maxMessageBytes())
 		if err != nil {
 			return nil, fmt.Errorf("read response: %w", err)
 		}
@@ -185,32 +239,62 @@ func (c *AppServerClient) readMessage() ([]byte, error) {
 			}
 			size, err := strconv.Atoi(strings.TrimSpace(parts[1]))
 			if err != nil {
-				continue
+				return nil, fmt.Errorf("invalid content-length %q: %w", strings.TrimSpace(parts[1]), err)
+			}
+			if size < 0 || size > c.maxMessageBytes() {
+				return nil, fmt.Errorf("framed body size %d exceeds limit %d", size, c.maxMessageBytes())
+			}
+			if err := discardHeader(reader, c.maxMessageBytes()); err != nil {
+				return nil, err
 			}
 			payload := make([]byte, size)
-			if _, err := io.ReadFull(c.reader, payload); err != nil {
+			if _, err := io.ReadFull(reader, payload); err != nil {
 				return nil, fmt.Errorf("read framed body: %w", err)
 			}
-			c.discardLine()
 			return bytes.TrimSpace(payload), nil
 		}
 		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
+			if len(trimmed) > c.maxMessageBytes() {
+				return nil, fmt.Errorf("unframed body size %d exceeds limit %d", len(trimmed), c.maxMessageBytes())
+			}
 			return []byte(trimmed), nil
 		}
 	}
 }
 
-func (c *AppServerClient) discardLine() {
+func readLineLimited(reader *bufio.Reader, maxBytes int) (string, error) {
+	var line []byte
 	for {
-		if b, err := c.reader.Peek(1); err == nil && b[0] == '\n' {
-			c.reader.ReadByte()
-			continue
+		fragment, err := reader.ReadSlice('\n')
+		line = append(line, fragment...)
+		if len(line) > maxBytes {
+			return "", fmt.Errorf("response line size %d exceeds limit %d", len(line), maxBytes)
 		}
-		if b, err := c.reader.Peek(2); err == nil && bytes.Equal(b, []byte{'\r', '\n'}) {
-			c.reader.ReadByte()
-			c.reader.ReadByte()
+		if err == nil {
+			return string(line), nil
 		}
-		break
+		if err != bufio.ErrBufferFull {
+			return "", err
+		}
+	}
+}
+
+func (c *AppServerClient) maxMessageBytes() int {
+	if c.cfg.MaxMessageBytes <= 0 {
+		return defaultMaxMessageBytes
+	}
+	return c.cfg.MaxMessageBytes
+}
+
+func discardHeader(reader *bufio.Reader, maxBytes int) error {
+	for {
+		line, err := readLineLimited(reader, maxBytes)
+		if err != nil {
+			return fmt.Errorf("read framed header: %w", err)
+		}
+		if strings.TrimSpace(line) == "" {
+			return nil
+		}
 	}
 }
 
@@ -220,13 +304,21 @@ func (c *AppServerClient) Close() error {
 	if !c.started {
 		return nil
 	}
+	c.stopLocked()
+	return nil
+}
+
+func (c *AppServerClient) stopLocked() {
 	if c.stdin != nil {
-		c.stdin.Close()
+		_ = c.stdin.Close()
 	}
 	if c.cmd != nil && c.cmd.Process != nil {
-		c.cmd.Process.Kill()
+		_ = c.cmd.Process.Kill()
 		_ = c.cmd.Wait()
 	}
 	c.started = false
-	return nil
+	c.stdin = nil
+	c.reader = nil
+	c.encoder = nil
+	c.cmd = nil
 }

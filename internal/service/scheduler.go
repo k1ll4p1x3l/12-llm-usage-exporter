@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/collectors"
@@ -11,19 +12,24 @@ import (
 	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/exporters/jsonfile"
 	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/exporters/prometheus"
 	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/model"
+	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/redact"
 )
 
 type Runner struct {
-	cfg        config.Config
-	collectors []collectors.Collector
-	prometheus *prometheus.Exporter
+	cfg              config.Config
+	collectors       []collectors.Collector
+	prometheus       *prometheus.Exporter
+	providerTypes    map[string]string
+	mu               sync.Mutex
+	lastSuccessfulAt *time.Time
 }
 
 func NewRunner(cfg config.Config, collectors []collectors.Collector) *Runner {
 	return &Runner{
-		cfg:        cfg,
-		collectors: collectors,
-		prometheus: prometheus.New(cfg.Prometheus.Enabled),
+		cfg:           cfg,
+		collectors:    collectors,
+		prometheus:    prometheus.New(cfg.Prometheus.Enabled),
+		providerTypes: providerTypesByID(cfg),
 	}
 }
 
@@ -54,6 +60,9 @@ func (r *Runner) Run(ctx context.Context) error {
 }
 
 func (r *Runner) tick(ctx context.Context) (model.Snapshot, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	generatedAt := time.Now().UTC()
 	snapshot := model.Snapshot{
 		SchemaVersion: model.SchemaVersion,
@@ -65,22 +74,25 @@ func (r *Runner) tick(ctx context.Context) (model.Snapshot, error) {
 	}
 
 	var failures []error
-	var lastSuccess time.Time
+	var lastSuccess *time.Time
 
 	for _, c := range r.collectors {
 		providerSnapshot, err := c.Collect(ctx)
 		if err != nil {
 			failures = append(failures, fmt.Errorf("%s: %w", c.ID(), err))
 			snapshot.Providers = append(snapshot.Providers, model.ProviderSnapshot{
-				ID:          c.ID(),
-				Source:      "error",
-				Status:      model.ProviderStatusError,
-				Error:       err.Error(),
-				CollectedAt: generatedAt,
+				ID:           c.ID(),
+				Source:       "error",
+				ProviderType: r.providerType(c.ID()),
+				Status:       model.ProviderStatusError,
+				Error:        redact.Message(err.Error()),
+				CollectedAt:  generatedAt,
+				UsageWindows: []model.UsageWindow{},
 			})
 		} else {
-			lastSuccess = generatedAt
-			snapshot.Providers = append(snapshot.Providers, providerSnapshot)
+			successAt := generatedAt
+			lastSuccess = &successAt
+			snapshot.Providers = append(snapshot.Providers, r.normalizeProviderSnapshot(c.ID(), providerSnapshot, generatedAt))
 		}
 	}
 
@@ -89,14 +101,17 @@ func (r *Runner) tick(ctx context.Context) (model.Snapshot, error) {
 		snapshot.Health.Status = model.HealthStatusHealthy
 	case len(failures) == len(r.collectors):
 		snapshot.Health.Status = model.HealthStatusUnavailable
-		snapshot.Health.Message = joinErrors(failures)
+		snapshot.Health.Message = redact.Message(joinErrors(failures))
 	default:
 		snapshot.Health.Status = model.HealthStatusDegraded
-		snapshot.Health.Message = joinErrors(failures)
+		snapshot.Health.Message = redact.Message(joinErrors(failures))
 	}
 
-	if !lastSuccess.IsZero() {
-		snapshot.Health.LastSuccessfulAt = &lastSuccess
+	if lastSuccess != nil {
+		r.lastSuccessfulAt = lastSuccess
+	}
+	if r.lastSuccessfulAt != nil {
+		snapshot.Health.LastSuccessfulAt = r.lastSuccessfulAt
 	}
 
 	if r.cfg.JSONOutput.Enabled {
@@ -121,4 +136,38 @@ func joinErrors(errs []error) string {
 		msg = append(msg, err.Error())
 	}
 	return strings.Join(msg, "; ")
+}
+
+func providerTypesByID(cfg config.Config) map[string]string {
+	out := make(map[string]string, len(cfg.Providers))
+	for _, provider := range cfg.Providers {
+		out[provider.Name] = provider.Type
+	}
+	return out
+}
+
+func (r *Runner) providerType(id string) string {
+	if providerType := strings.TrimSpace(r.providerTypes[id]); providerType != "" {
+		return providerType
+	}
+	return "unknown"
+}
+
+func (r *Runner) normalizeProviderSnapshot(id string, snapshot model.ProviderSnapshot, collectedAt time.Time) model.ProviderSnapshot {
+	if snapshot.ID == "" {
+		snapshot.ID = id
+	}
+	if snapshot.Source == "" {
+		snapshot.Source = "collector"
+	}
+	if snapshot.ProviderType == "" {
+		snapshot.ProviderType = r.providerType(id)
+	}
+	if snapshot.CollectedAt.IsZero() {
+		snapshot.CollectedAt = collectedAt
+	}
+	if snapshot.UsageWindows == nil {
+		snapshot.UsageWindows = []model.UsageWindow{}
+	}
+	return snapshot
 }

@@ -146,6 +146,13 @@ main() {
   fi
 
   ensure_label "no-changelog-required" "0E8A16" "Skip CHANGELOG.md requirement for this PR."
+  ensure_label "dependencies" "0366D6" "Dependency update or dependency maintenance."
+  ensure_label "security" "D73A4A" "Security hardening or vulnerability handling."
+  ensure_label "automation" "5319E7" "CI, release, or repository automation."
+  ensure_label "area/core" "1D76DB" "Core collector, model, service, or exporter logic."
+  ensure_label "area/docs" "0075CA" "Documentation-only or documentation-heavy change."
+  ensure_label "area/provider" "FBCA04" "Provider policy, mapping, or integration work."
+  ensure_label "area/release" "C2E0C6" "Release process, versioning, or distribution work."
 
   ensure_milestone "0.1" "MVP Foundation and JSON export baseline."
   ensure_milestone "0.2" "Release readiness and hardening workstream."

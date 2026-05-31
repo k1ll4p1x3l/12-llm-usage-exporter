@@ -31,6 +31,7 @@ func TestLoadJSON(t *testing.T) {
 				"type":    "codex",
 				"enabled": true,
 				"command": "codex",
+				"timeout": "15s",
 			},
 		},
 	}
@@ -58,6 +59,9 @@ func TestLoadJSON(t *testing.T) {
 	}
 	if len(cfg.Providers) != 1 || cfg.Providers[0].Name != "codex" {
 		t.Fatalf("unexpected providers: %#v", cfg.Providers)
+	}
+	if cfg.Providers[0].Timeout != 15*time.Second {
+		t.Fatalf("unexpected provider timeout: %v", cfg.Providers[0].Timeout)
 	}
 }
 
@@ -132,5 +136,35 @@ func TestInvalidDurationLiteral(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "invalid LLM_USAGE_EXPORTER_POLL_INTERVAL") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestValidateRejectsUnsupportedProviderType(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Default()
+	cfg.Providers[0].Type = "unknown"
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected unsupported provider error")
+	}
+}
+
+func TestValidateRejectsDisabledOnlyProviders(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Default()
+	cfg.Providers[0].Enabled = false
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected no enabled providers error")
+	}
+}
+
+func TestValidateRejectsEnabledJSONWithoutPath(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Default()
+	cfg.JSONOutput.Path = ""
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected empty json path error")
 	}
 }

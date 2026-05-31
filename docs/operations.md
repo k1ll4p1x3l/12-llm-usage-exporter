@@ -44,13 +44,12 @@ You can also run this from GitHub Actions:
 gh workflow run bootstrap-github-org.yml
 ```
 
-You can also apply optional branch protection in the same workflow invocation:
+Admin-level repository settings are intentionally applied from an authenticated
+maintainer shell, not from the default `GITHUB_TOKEN` workflow token:
 
 ```bash
-gh workflow run bootstrap-github-org.yml \
-  -f dry_run=true \
-  -f apply_branch_protection=true \
-  -f protection_branch=main
+DRY_RUN=1 ./scripts/bootstrap-github-settings.sh
+./scripts/bootstrap-github-settings.sh
 ```
 
 Run in dry-run mode from GitHub Actions:
@@ -66,6 +65,27 @@ If you need direct command execution, keep the check names aligned with this wor
 - `analyze` (from `.github/workflows/codeql.yml`)
 - `check-milestone` (from `.github/workflows/milestone-check.yml`)
 - `ensure-changelog` (from `.github/workflows/changelog-check.yml`)
+
+## Maintainer toolchain
+
+Validate the local development environment:
+
+```bash
+./scripts/dev-env-check.sh
+```
+
+If authentication or elevated manual work is required, the script writes a
+reviewable helper script to `.codex/state/manual-admin-steps.sh` by default.
+Override `MANUAL_STEPS_FILE` to place it elsewhere.
+
+Run the full local check gate:
+
+```bash
+./scripts/check.sh
+```
+
+The project expects Go `1.26.3`, GoReleaser `v2.16.0`, Gitleaks `v8.30.1`,
+actionlint `v1.7.12`, and govulncheck `v1.1.4`.
 
 ## Milestone practice
 

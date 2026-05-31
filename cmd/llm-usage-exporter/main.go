@@ -104,16 +104,16 @@ func runSnapshot(args []string) error {
 
 	runner := service.NewRunner(cfg, collectors)
 	ctx := context.Background()
-	snapshot, err := runner.RunOnce(ctx)
-	if err != nil {
-		log.Printf("snapshot warning: %v", err)
+	snapshot, collectErr := runner.RunOnce(ctx)
+	if collectErr != nil {
+		log.Printf("snapshot warning: %v", collectErr)
 	}
 	out, err := json.MarshalIndent(snapshot, "", "  ")
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(out))
-	return nil
+	return collectErr
 }
 
 func runValidateConfig(args []string) error {
