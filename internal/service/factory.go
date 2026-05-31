@@ -20,6 +20,7 @@ func BuildCollectors(cfg config.Config) ([]collectors.Collector, error) {
 			client := codex.NewAppServerClient(codex.AppServerConfig{
 				Command: provider.Command,
 				Args:    provider.Args,
+				Timeout: provider.Timeout,
 			})
 			instances = append(instances, codex.NewCollector(provider.Name, client))
 		default:

@@ -18,10 +18,10 @@ const (
 
 type collector struct {
 	id     string
-	client *AppServerClient
+	client RPCClient
 }
 
-func NewCollector(id string, client *AppServerClient) *collector {
+func NewCollector(id string, client RPCClient) *collector {
 	return &collector{
 		id:     id,
 		client: client,
@@ -162,14 +162,40 @@ func (c *collector) readRateLimits(ctx context.Context) ([]model.UsageWindow, er
 }
 
 func normalizeRateLimit(data map[string]any) (rateLimitResult, error) {
-	window := rateLimitResult{
-		limitID:    getString(data, "limitId", "limit_id"),
-		limitName:  getString(data, "limitName", "limit_name"),
-		windowMins: getInt(data, "windowDurationMins", "window_duration_mins"),
+	limitID := getString(data, "limitId", "limit_id")
+	if limitID == "" {
+		return rateLimitResult{}, fmt.Errorf("rateLimits schema missing limitId")
+	}
+	windowMins, err := requiredInt(data, "windowDurationMins", "window_duration_mins")
+	if err != nil {
+		return rateLimitResult{}, err
+	}
+	used, err := requiredInt(data, "used", "used_count")
+	if err != nil {
+		return rateLimitResult{}, err
+	}
+	limit, err := requiredInt(data, "limit", "max")
+	if err != nil {
+		return rateLimitResult{}, err
+	}
+	if windowMins <= 0 {
+		return rateLimitResult{}, fmt.Errorf("rateLimits schema invalid windowDurationMins: %d", windowMins)
+	}
+	if used < 0 {
+		return rateLimitResult{}, fmt.Errorf("rateLimits schema invalid used: %d", used)
+	}
+	if limit < 0 {
+		return rateLimitResult{}, fmt.Errorf("rateLimits schema invalid limit: %d", limit)
 	}
 
-	window.used = getInt(data, "used", "used_count")
-	window.limit = getInt(data, "limit", "max")
+	window := rateLimitResult{
+		limitID:    limitID,
+		limitName:  getString(data, "limitName", "limit_name"),
+		windowMins: windowMins,
+		used:       used,
+		limit:      limit,
+	}
+
 	usedPercent := getFloat(data, "usedPercent", "used_percent")
 	if usedPercent < 0 && window.used >= 0 && window.limit > 0 {
 		usedPercent = (float64(window.used) / float64(window.limit)) * 100
@@ -177,14 +203,13 @@ func normalizeRateLimit(data map[string]any) (rateLimitResult, error) {
 	window.usedPct = usedPercent
 
 	if rawReset, ok := data["resetsAt"].(string); ok && rawReset != "" {
-		if t, err := time.Parse(time.RFC3339, rawReset); err == nil {
-			window.resetsAt = &t
+		t, err := time.Parse(time.RFC3339, rawReset)
+		if err != nil {
+			return rateLimitResult{}, fmt.Errorf("rateLimits schema invalid resetsAt: %w", err)
 		}
+		window.resetsAt = &t
 	}
 
-	if window.limitID == "" {
-		return rateLimitResult{}, fmt.Errorf("rateLimits schema missing limitId")
-	}
 	return window, nil
 }
 
@@ -219,7 +244,7 @@ func getFloat(data map[string]any, keys ...string) float64 {
 	return -1
 }
 
-func getInt(data map[string]any, keys ...string) int64 {
+func requiredInt(data map[string]any, keys ...string) (int64, error) {
 	for _, key := range keys {
 		raw, ok := data[key]
 		if !ok {
@@ -227,14 +252,20 @@ func getInt(data map[string]any, keys ...string) int64 {
 		}
 		switch value := raw.(type) {
 		case float64:
-			return int64(value)
+			converted := int64(value)
+			if value != float64(converted) {
+				return 0, fmt.Errorf("rateLimits schema invalid integer %s: %v", key, value)
+			}
+			return converted, nil
 		case int:
-			return int64(value)
+			return int64(value), nil
 		case int64:
-			return value
+			return value, nil
 		case int32:
-			return int64(value)
+			return int64(value), nil
+		default:
+			return 0, fmt.Errorf("rateLimits schema invalid integer %s", key)
 		}
 	}
-	return 0
+	return 0, fmt.Errorf("rateLimits schema missing %s", keys[0])
 }

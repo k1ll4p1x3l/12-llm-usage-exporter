@@ -22,3 +22,10 @@
 - `llm_usage_window_used` / `llm_usage_window_limit`: raw numeric gauges.
 - `llm_usage_window_reset_timestamp_seconds`: reset deadline.
 - `llm_usage_provider_health`: provider health signal.
+
+## JSON Schema
+
+The versioned JSON schema is tracked at
+[`schemas/usage.snapshot.v1alpha1.json`](../schemas/usage.snapshot.v1alpha1.json).
+Schema changes must be additive while the snapshot remains `v1alpha1`, unless
+the changelog explicitly calls out a breaking pre-alpha adjustment.

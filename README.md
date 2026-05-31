@@ -61,13 +61,15 @@ providers:
     type: codex
     enabled: true
     command: codex
+    timeout: 10s
     args: ["appserver"]
 ```
 
 ## CLI
 
 - `serve` runs periodic polling and exports to configured outputs.
-- `snapshot` runs one poll and prints snapshot to stdout.
+- `snapshot` runs one poll and prints snapshot to stdout. If every provider fails, it still
+  prints the error snapshot but exits non-zero.
 - `validate-config` validates and prints the effective configuration.
 - `version` prints the built version.
 
@@ -77,9 +79,12 @@ Useful docs:
 - `docs/operations.md`
 - `docs/release.md`
 - `docs/provider-policy/codex.md`
+- `schemas/usage.snapshot.v1alpha1.json`
 
 ## Development
 
+- `scripts/dev-env-check.sh`
+- `scripts/check.sh`
 - `go test ./...`
 - `go vet ./...`
 - `gofmt` or IDE formatting before commits
@@ -87,7 +92,10 @@ Useful docs:
 - PRs are expected to carry an assigned GitHub milestone.
 - Maintainers can generate release-note drafts with the Milestone Notes workflow and
   [`docs/milestones.md`](docs/milestones.md).
-- Repository governance bootstrap supports preview mode via `DRY_RUN=1` and also runs in GitHub Actions through `.github/workflows/bootstrap-github-org.yml` (including optional branch protection bootstrap).
+- Repository governance bootstrap supports preview mode via `DRY_RUN=1` and also runs in GitHub Actions through `.github/workflows/bootstrap-github-org.yml`.
+- Repository settings that require admin permissions are handled by
+  `scripts/bootstrap-github-settings.sh` from an authenticated maintainer shell.
+- New provider support requires a provider policy under `docs/provider-policy/`.
 
 ## Repository policy
 
@@ -96,6 +104,7 @@ Useful docs:
 - For release planning and milestone operations, follow
   [`docs/operations.md`](docs/operations.md) and [`docs/milestones.md`](docs/milestones.md).
 - Quick bootstrap for repo governance is `./scripts/bootstrap-github-org.sh`.
+- Full local validation is `./scripts/check.sh`.
 
 ## License
 

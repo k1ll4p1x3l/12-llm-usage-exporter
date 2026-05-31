@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Prepare milestone notes
         id: prepare
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const {data: repository} = await github.rest.repos.get({
@@ -128,7 +128,7 @@ jobs:
             core.info(`Wrote ${fileName} for milestone ${milestone.title} (${milestoneRef || `#${milestone.number}`})`);
 
       - name: Upload milestone notes
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: milestone-${{ steps.prepare.outputs.milestone_number }}-release-notes
           path: ${{ steps.prepare.outputs.file_name }}

@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/k1ll4p1x3l/12-llm-usage-exporter/schemas/usage.snapshot.v1alpha1.json",
+  "title": "llm-usage-exporter snapshot",
+  "type": "object",
+  "required": ["schema_version", "agent", "generated_at", "source", "health", "providers"],
+  "properties": {
+    "schema_version": {
+      "const": "usage.snapshot.v1alpha1"
+    },
+    "agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "health": {
+      "$ref": "#/$defs/health"
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/provider"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "health": {
+      "type": "object",
+      "required": ["status", "collected_at"],
+      "properties": {
+        "status": {
+          "enum": ["healthy", "degraded", "unavailable"]
+        },
+        "message": {
+          "type": "string"
+        },
+        "last_successful_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "required": ["id", "source", "provider_type", "status", "collected_at", "usage_windows"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": ["ok", "error"]
+        },
+        "error": {
+          "type": "string"
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "account": {
+          "$ref": "#/$defs/account"
+        },
+        "usage_windows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/usage_window"
+          }
+        },
+        "credits": {
+          "$ref": "#/$defs/credits"
+        }
+      },
+      "additionalProperties": false
+    },
+    "account": {
+      "type": "object",
+      "required": ["provider_account_id"],
+      "properties": {
+        "provider_account_id": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "plan_type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "usage_window": {
+      "type": "object",
+      "required": ["limit_id", "limit_name", "window_duration_mins", "used", "limit", "used_percent"],
+      "properties": {
+        "limit_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limit_name": {
+          "type": "string"
+        },
+        "window_duration_mins": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "used": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "used_percent": {
+          "type": "number",
+          "minimum": 0
+        },
+        "resets_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "credits": {
+      "type": "object",
+      "required": ["remaining", "total"],
+      "properties": {
+        "remaining": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

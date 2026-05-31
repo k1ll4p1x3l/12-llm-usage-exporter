@@ -4,6 +4,12 @@ Current pre-release baseline: `0.0.0-dev`
 
 - Initial go implementation is prepared for local build and iteration.
 - No public v1 semantics and no signed production release yet.
+- Development and CI baseline: Go `1.26.3`.
+- User-local maintainer tools:
+  - GoReleaser `v2.16.0`
+  - Gitleaks `v8.30.1`
+  - actionlint `v1.7.12`
+  - govulncheck `v1.1.4`
 
 ## Planned milestones
 

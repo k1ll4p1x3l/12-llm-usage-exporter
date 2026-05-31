@@ -37,6 +37,25 @@
 - Added `.github/workflows/bootstrap-github-org.yml` to run the bootstrap script from GitHub Actions.
 - Extended bootstrap automation to optionally apply branch protection for the target branch, including required check contexts aligned to existing workflows.
 - Updated bootstrap helper to support `DRY_RUN=1` without GitHub authentication by deferring repository resolution until runtime.
+- Hardened local development and repository automation:
+  - Updated GitHub Actions to current major versions and Go `1.26.3`.
+  - Added `scripts/dev-env-check.sh`, `scripts/check.sh`, and `scripts/bootstrap-github-settings.sh`.
+  - Split GitHub metadata bootstrap from admin-level repository settings.
+  - Added additional repository labels for dependencies, automation, security, provider, core, docs, and release work.
+  - Added repository CODEOWNERS.
+- Hardened the MVP runtime:
+  - Added provider-level timeout parsing and validation.
+  - Fixed Codex JSON-RPC framed response parsing.
+  - Added JSON-RPC response version validation and frame size limits.
+  - Made Codex collector RPC dependencies mockable.
+  - Treat more Codex rate-limit schema drift as hard errors.
+  - Normalized provider error snapshots so degraded and unavailable output still follows the public schema.
+  - Redacted sensitive-looking provider error text, including bearer headers and JSON-like secret fields, before snapshot export.
+  - Preserved `last_successful_at` across later provider failures.
+  - Made `snapshot` exit non-zero when all providers fail after printing the error snapshot.
+- Expanded tests for Codex collector/client behavior, config validation, JSON export, Prometheus export, redaction, and scheduler failure state.
+- Added a versioned JSON schema for `usage.snapshot.v1alpha1`.
+- Added a deferred Claude Code provider policy documenting why it is not safe to collect by default yet.
 
 ## 0.0.1
 
