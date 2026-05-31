@@ -3,7 +3,10 @@
 Recommended GitHub settings for this repository:
 
 - Branch protection on `main`
-  - require pull request reviews before merge
+  - keep pull request and required-check workflow for normal changes
+  - single-maintainer default: set required approving reviews to `0`, because
+    GitHub does not count a pull request author's own approval toward required
+    reviews
   - dismiss stale reviews
   - require status checks: `ci`, `analyze`, `vulncheck`, `check-milestone`, `ensure-changelog`
   - require pull request milestone assignment before merge
@@ -51,6 +54,9 @@ maintainer shell, not from the default `GITHUB_TOKEN` workflow token:
 DRY_RUN=1 ./scripts/bootstrap-github-settings.sh
 ./scripts/bootstrap-github-settings.sh
 ```
+
+Set `REQUIRED_APPROVING_REVIEW_COUNT=1` only when at least one additional
+maintainer can approve pull requests.
 
 Run in dry-run mode from GitHub Actions:
 

@@ -281,3 +281,53 @@ Continue from branch `codex/final-0.4-checkpoint`. This branch only records the
 final long-running-goal checkpoint after PR #8 merged. Run `./scripts/check.sh`,
 merge the checkpoint through the repository's protected path or an explicitly
 approved admin path, then verify `main` and complete the goal audit.
+
+## Checkpoint 2026-05-31 04:04 Europe/Berlin
+
+### Goal
+
+Adjust repository governance for single-maintainer operation so future PRs can
+be merged without disabling branch protection.
+
+### Completed
+
+- Confirmed GitHub did not allow the sole maintainer to satisfy the required
+  approving review gate on their own PR.
+- Updated branch-protection bootstrap defaults so required approving reviews are
+  `0` unless `REQUIRED_APPROVING_REVIEW_COUNT` is explicitly set higher.
+- Documented that GitHub does not count a pull request author's own approval
+  toward required reviews, so `REQUIRED_APPROVING_REVIEW_COUNT=1` should only be
+  used when another maintainer can review.
+
+### Changed Files
+
+- `CHANGELOG.md`
+- `docs/TASK_LOG.md`
+- `docs/operations.md`
+- `scripts/bootstrap-github-org.sh`
+- `scripts/bootstrap-github-settings.sh`
+
+### Tests / Checks
+
+- `./scripts/bootstrap-github-settings.sh`: pass; live branch protection updated.
+- `gh api repos/k1ll4p1x3l/12-llm-usage-exporter/branches/main/protection --jq ...`:
+  pass; required status checks remain configured and
+  `required_approving_review_count` is `0`.
+
+### Risks / Open Points
+
+- Required status checks and milestone/changelog gates stay active.
+- Human review is no longer technically required by branch protection while this
+  remains a single-maintainer repository.
+
+### Next Safe Step
+
+- Apply the updated branch protection live, run the full check gate, push PR #9,
+  wait for checks, merge it normally, then verify `main`.
+
+### Resume Prompt
+
+Continue on branch `codex/final-0.4-checkpoint`. Apply
+`./scripts/bootstrap-github-settings.sh`, verify branch protection shows
+`required_approving_review_count: 0`, run `./scripts/check.sh`, push the branch,
+wait for PR #9 checks, merge through the normal PR path, and verify `main`.
