@@ -61,6 +61,7 @@
 - Updated Go module dependencies for TOML parsing and Prometheus export to the current Dependabot targets.
 - Clarified the 0.3 provider-policy milestone, added an explicit 0.4 operations milestone, and documented Codex `initialize` as JSON-RPC session setup.
 - Moved generated manual environment remediation steps to the ignored `.codex/state` area by default.
+- Logged closure of superseded Dependabot pull requests after their updates were consolidated into PR #8.
 
 ## 0.0.1
 

@@ -181,3 +181,53 @@ Continue on branch `codex/complete-0.1-0.4`. Read `AGENTS.md`,
 merge without the required review. Continue from the latest checkpoint, close
 superseded Dependabot PRs only after PR #8 includes the replacement updates, and
 keep `docs/TASK_LOG.md` current after each milestone.
+
+## Checkpoint 2026-05-31 03:38 Europe/Berlin
+
+### Goal
+
+Record the completion of the dependency-consolidation milestone and the current
+PR gate status.
+
+### Completed
+
+- Committed and pushed audit fixes as `8a23fa5` on
+  `codex/complete-0.1-0.4`.
+- Closed superseded Dependabot PRs #1 through #7 with comments pointing to PR
+  #8 as the consolidated replacement.
+- Verified only PR #8 remains open.
+- Verified milestones `0.1` through `0.4` have no open milestone items except
+  PR #8 assigned to `0.4`.
+- Verified PR #8 checks are green after the follow-up push:
+  `ci`, `analyze`, `vulncheck`, `check-milestone`, `ensure-changelog`, and
+  GitGuardian all pass.
+
+### Changed Files
+
+- `docs/TASK_LOG.md`
+
+### Tests / Checks
+
+- `gh pr list --state open --json ...`: pass; only PR #8 is open.
+- `gh api repos/k1ll4p1x3l/12-llm-usage-exporter/milestones --paginate`:
+  pass; milestones `0.1` through `0.4` have no open items outside PR #8.
+- `gh pr checks 8 --watch --interval 10`: pass; all required checks pass.
+
+### Risks / Open Points
+
+- PR #8 remains `REVIEW_REQUIRED` because branch protection requires one
+  approving review. Do not bypass this requirement.
+- Milestone `0.3` is satisfied as provider policy coverage and safe deferral,
+  not as a live second-provider collector.
+
+### Next Safe Step
+
+- Request or wait for an approving review on PR #8. After approval, merge via
+  the protected PR path and verify `main`.
+
+### Resume Prompt
+
+Continue on branch `codex/complete-0.1-0.4`. Verify PR #8 review state and
+checks. If an approving review exists, merge through GitHub's protected PR path,
+pull `main`, run `./scripts/check.sh`, and update `docs/TASK_LOG.md`. If review
+is still missing, do not merge or bypass branch protection.
