@@ -74,6 +74,10 @@ Validate the local development environment:
 ./scripts/dev-env-check.sh
 ```
 
+If authentication or elevated manual work is required, the script writes a
+reviewable helper script to `.codex/state/manual-admin-steps.sh` by default.
+Override `MANUAL_STEPS_FILE` to place it elsewhere.
+
 Run the full local check gate:
 
 ```bash

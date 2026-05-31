@@ -16,6 +16,9 @@ Each collector implements:
   - dedicated collector package
   - policy doc
   - integration tests for schema mapping
+- Provider candidates may be documented as deferred when no safe, local,
+  read-only source exists yet. Deferred providers must not be accepted in
+  runtime configuration until a collector and tests are added.
 
 ## Policy evolution
 

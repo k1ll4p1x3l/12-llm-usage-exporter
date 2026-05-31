@@ -10,16 +10,20 @@ Current pre-release baseline: `0.0.0-dev`
   - Gitleaks `v8.30.1`
   - actionlint `v1.7.12`
   - govulncheck `v1.1.4`
+- Direct Go module baselines:
+  - `github.com/pelletier/go-toml/v2` `v2.3.1`
+  - `github.com/prometheus/client_golang` `v1.23.2`
 
 ## Planned milestones
 
 - 0.1.0: Pre-alpha CLI exporter with real Codex App Server integration.
 - 0.2.0: Integration tests with mocked JSON-RPC fixtures and release hardening.
-- 0.3.0: Release candidate with optional attestations and distribution artifacts.
+- 0.3.0: Provider policy coverage with safe deferral where no read-only source exists.
 - 0.4.0: Public project operations baseline (milestone process, release-note automation, contribution tooling).
 
 ## GitHub milestone mapping
 
 - `0.1` maps to the milestone in `docs/07_roadmap_milestones.md` covering MVP foundation work.
 - `0.2` maps to hardening and operational quality work.
-- `0.3` maps to provider expansion and policy coverage.
+- `0.3` maps to provider policy coverage and safe provider-candidate deferral.
+- `0.4` maps to public operations and release automation.

@@ -96,6 +96,7 @@ Useful docs:
 - Repository settings that require admin permissions are handled by
   `scripts/bootstrap-github-settings.sh` from an authenticated maintainer shell.
 - New provider support requires a provider policy under `docs/provider-policy/`.
+- Long-running implementation checkpoints are tracked in `docs/TASK_LOG.md`.
 
 ## Repository policy
 

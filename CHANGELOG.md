@@ -57,6 +57,10 @@
 - Expanded tests for Codex collector/client behavior, config validation, JSON export, Prometheus export, redaction, and scheduler failure state.
 - Added a versioned JSON schema for `usage.snapshot.v1alpha1`.
 - Added a deferred Claude Code provider policy documenting why it is not safe to collect by default yet.
+- Updated the long-running task log with the live PR, branch-protection, and milestone completion audit status.
+- Updated Go module dependencies for TOML parsing and Prometheus export to the current Dependabot targets.
+- Clarified the 0.3 provider-policy milestone, added an explicit 0.4 operations milestone, and documented Codex `initialize` as JSON-RPC session setup.
+- Moved generated manual environment remediation steps to the ignored `.codex/state` area by default.
 
 ## 0.0.1
 

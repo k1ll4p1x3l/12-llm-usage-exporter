@@ -6,12 +6,15 @@ provider: codex
 
 ## Allowed operations
 
+- `initialize` for JSON-RPC session setup only.
 - `account/read` with `refreshToken: false`.
 - `account/rateLimits/read`.
 
 ## Forbidden operations
 
 - Any token refresh/login/logout flow.
+- Any `initialize` parameter that authenticates, refreshes, or mutates local
+  provider state.
 - Reading or forwarding `~/.codex/auth.json`.
 - Header sniffing, browser automation, or UI scraping.
 - Using provider credentials as pass-through secrets.

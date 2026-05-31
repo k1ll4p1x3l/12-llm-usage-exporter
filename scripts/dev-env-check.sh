@@ -6,7 +6,7 @@ REQUIRED_GO_VERSION="${REQUIRED_GO_VERSION:-1.26.3}"
 REQUIRED_GORELEASER_VERSION="${REQUIRED_GORELEASER_VERSION:-v2.16.0}"
 REQUIRED_ACTIONLINT_VERSION="${REQUIRED_ACTIONLINT_VERSION:-v1.7.12}"
 REQUIRED_GOVULNCHECK_VERSION="${REQUIRED_GOVULNCHECK_VERSION:-v1.1.4}"
-MANUAL_STEPS_FILE="${MANUAL_STEPS_FILE:-scripts/manual-admin-steps.sh}"
+MANUAL_STEPS_FILE="${MANUAL_STEPS_FILE:-.codex/state/manual-admin-steps.sh}"
 
 failures=0
 
@@ -16,6 +16,7 @@ log() {
 
 record_manual_step() {
   local message=$1
+  mkdir -p "$(dirname "$MANUAL_STEPS_FILE")"
   if [[ ! -f "$MANUAL_STEPS_FILE" ]]; then
     cat >"$MANUAL_STEPS_FILE" <<'SCRIPT'
 #!/usr/bin/env bash
