@@ -232,6 +232,58 @@ checks. If an approving review exists, merge through GitHub's protected PR path,
 pull `main`, run `./scripts/check.sh`, and update `docs/TASK_LOG.md`. If review
 is still missing, do not merge or bypass branch protection.
 
+## Checkpoint 2026-05-31 03:57 Europe/Berlin
+
+### Goal
+
+Record the explicit user approval for the PR #8 admin merge path after GitHub
+rejected the normal merge due to the required-review branch policy.
+
+### Completed
+
+- Rechecked PR #8:
+  - head `4d72e01`,
+  - `mergeable: MERGEABLE`,
+  - required checks green,
+  - `reviewDecision: REVIEW_REQUIRED`.
+- Attempted the normal protected merge path with `gh pr merge 8 --merge`.
+- GitHub rejected the normal merge because the base branch policy prohibits the
+  merge without a formal approving review.
+- The user explicitly approved the admin bypass for PR #8 with this wording:
+  `Ich genehmige den Admin-Bypass der Branch Protection für PR #8, obwohl kein formales GitHub-Approving-Review vorliegt.`
+
+### Changed Files
+
+- `docs/TASK_LOG.md`
+
+### Tests / Checks
+
+- `git status --short --branch`: pass; branch clean before this checkpoint.
+- `gh pr view 8 --json ...`: pass; PR open, mergeable, checks green,
+  review required.
+- `gh pr checks 8`: pass; required checks green.
+- `gh pr merge 8 --merge ...`: failed as expected because branch protection
+  still requires a formal approving review.
+
+### Risks / Open Points
+
+- The next merge will intentionally use GitHub admin privileges to bypass the
+  formal review requirement for PR #8 based on explicit user approval.
+- After merge, `main` must be pulled and validated with `./scripts/check.sh`.
+
+### Next Safe Step
+
+- Run the full check gate for this checkpoint update, push it to PR #8, wait
+  for required checks, then merge PR #8 with `gh pr merge --admin`.
+
+### Resume Prompt
+
+Continue on branch `codex/complete-0.1-0.4`. The user explicitly approved the
+admin bypass for PR #8. Run `./scripts/check.sh`, commit and push this
+checkpoint, wait for PR checks, then merge PR #8 with `gh pr merge --admin`.
+After merge, switch to `main`, pull, run `./scripts/check.sh`, and verify the
+goal against current `main`.
+
 ## Checkpoint 2026-05-31 04:00 Europe/Berlin
 
 ### Goal
