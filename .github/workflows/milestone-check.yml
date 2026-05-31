@@ -17,6 +17,10 @@ jobs:
         uses: actions/github-script@v9
         with:
           script: |
-            if (context.payload.pull_request.milestone == null) {
+            const { owner, repo } = context.repo
+            const pull_number = context.payload.pull_request.number
+            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number })
+
+            if (pull.milestone == null) {
               core.setFailed("Assign a GitHub milestone to the pull request before merge.")
             }

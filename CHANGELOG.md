@@ -41,6 +41,7 @@
   - Updated GitHub Actions to current major versions and Go `1.26.3`.
   - Added `scripts/dev-env-check.sh`, `scripts/check.sh`, and `scripts/bootstrap-github-settings.sh`.
   - Split GitHub metadata bootstrap from admin-level repository settings.
+  - Made milestone enforcement fetch the current pull request state before failing.
   - Added additional repository labels for dependencies, automation, security, provider, core, docs, and release work.
   - Added repository CODEOWNERS.
 - Hardened the MVP runtime:
