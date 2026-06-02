@@ -13,6 +13,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {'.git', '__pycache__', '.venv', 'venv', 'node_modules'}
+SKIP_PREFIXES = (
+    '.codex/state/',
+    'cache/',
+    'dist/',
+    'tmp/',
+    'vendor/',
+)
 SKIP_FILES = {
     'scripts/public_repo_sanity_check.py',
     'docs/PUBLIC_REPO_SAFETY.md',
@@ -57,6 +64,8 @@ def main() -> int:
     for path in sorted(ROOT.rglob('*')):
         rel = path.relative_to(ROOT).as_posix()
         if any(part in SKIP_DIRS for part in path.parts):
+            continue
+        if rel == '.codex/state' or any(rel.startswith(prefix) for prefix in SKIP_PREFIXES):
             continue
         if rel in SKIP_FILES:
             continue

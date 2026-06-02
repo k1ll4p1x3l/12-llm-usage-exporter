@@ -31,6 +31,9 @@ goreleaser check
 goreleaser release --snapshot --skip=publish --clean
 ```
 
+For beta releases, confirm the snapshot build includes Linux, macOS, and
+Windows archives for `amd64` and `arm64`.
+
 ## Reference commands
 
 Dispatch release notes workflow by number:

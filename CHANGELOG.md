@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Added first beta release implementation work:
+  - `init` CLI command for starter config generation.
+  - `doctor` CLI command for config, command, output, metrics, and read-only Codex collection diagnostics.
+  - OS-specific default config and snapshot paths for Linux, macOS, and Windows.
+  - Cross-OS unit-test workflow coverage for Ubuntu, macOS, and Windows.
+  - GoReleaser targets for Linux, macOS, and Windows on `amd64` and `arm64`.
+  - Syft release-toolchain checks for archive SBOM generation.
+- Updated Codex App Server integration:
+  - Uses current `clientInfo` initialization shape plus `initialized` notification.
+  - Accepts App Server responses that omit the JSON-RPC version field.
+  - Skips App Server notifications while waiting for matching responses.
+  - Resolves non-path Codex commands through `PATH`.
+  - Enforces an explicit Codex RPC allowlist before transport calls.
+  - Supports current `account/rateLimits/read` bucket responses with `rateLimitsByLimitId`.
 - Added initial public implementation scaffold for `llm-usage-exporter`.
 - Added:
   - `go.mod` and Go project layout.
@@ -62,6 +76,7 @@
 - Clarified the 0.3 provider-policy milestone, added an explicit 0.4 operations milestone, and documented Codex `initialize` as JSON-RPC session setup.
 - Moved generated manual environment remediation steps to the ignored `.codex/state` area by default.
 - Logged closure of superseded Dependabot pull requests after their updates were consolidated into PR #8.
+- Recorded explicit admin merge approval for PR #8 in the task log.
 - Recorded the final merged-main verification checkpoint for the 0.1-0.4 implementation baseline.
 - Adjusted branch-protection bootstrap defaults for single-maintainer operation by setting required approving reviews to `0` while keeping required status checks.
 

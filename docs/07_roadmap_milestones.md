@@ -53,4 +53,18 @@
 
 ## Current milestone
 
-- In progress: PR #8 combines the 0.1-0.4 implementation baseline for review.
+- In progress: `0.5-beta` for first beta release readiness.
+
+## Milestone 0.5 (First Beta)
+
+- Goal: first beta release with cross-platform CLI operation and Codex App
+  Server collection support on macOS, Linux, and Windows.
+- Planned outcomes:
+  - `init` and `doctor` CLI commands for first-use setup and diagnostics,
+  - OS-specific default config and snapshot paths,
+  - Codex App Server policy guard and current rate-limit bucket mapping,
+  - unit tests on Ubuntu, macOS, and Windows,
+  - portable release archives for Linux, macOS, and Windows on `amd64` and
+    `arm64`.
+- Tracking:
+  - open issues and PRs should be assigned to milestone `0.5-beta`.

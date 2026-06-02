@@ -4,8 +4,8 @@
 
 ## Current status
 
-- Development stage: pre-alpha
-- Primary platform: Linux
+- Development stage: beta implementation
+- Primary platforms: macOS, Linux, Windows
 - Primary language: Go
 - Primary provider: OpenAI Codex (read-only)
 
@@ -30,6 +30,21 @@ The project is intentionally a data translator, not a credential manager, dashbo
 - Unknown provider schema results in explicit error status snapshots.
 
 ## Quick start
+
+Create a starter config in the OS default location:
+
+```bash
+llm-usage-exporter init
+llm-usage-exporter doctor
+```
+
+Default config and snapshot paths:
+
+- Linux: `~/.config/llm-usage-exporter/config.yaml` and `~/.local/state/llm-usage-exporter/usage.snapshot.json`
+- macOS: `~/Library/Application Support/llm-usage-exporter/config.yaml` and `~/Library/Application Support/llm-usage-exporter/usage.snapshot.json`
+- Windows: `%AppData%\llm-usage-exporter\config.yaml` and `%LocalAppData%\llm-usage-exporter\usage.snapshot.json`
+
+Build from source:
 
 ```bash
 go build ./cmd/llm-usage-exporter
@@ -67,6 +82,8 @@ providers:
 
 ## CLI
 
+- `init` writes a starter YAML config. It will not overwrite existing files unless `--force` is set.
+- `doctor` validates config, checks Codex command resolution, verifies output settings, and runs a read-only Codex collection probe.
 - `serve` runs periodic polling and exports to configured outputs.
 - `snapshot` runs one poll and prints snapshot to stdout. If every provider fails, it still
   prints the error snapshot but exits non-zero.
@@ -89,6 +106,8 @@ Useful docs:
 - `go vet ./...`
 - `gofmt` or IDE formatting before commits
 - release build can use `goreleaser` and requires a semver git tag (`v*`) for `Release` workflow
+- release SBOM generation requires `syft` on the release runner
+- beta release archives target Linux, macOS, and Windows on `amd64` and `arm64`
 - PRs are expected to carry an assigned GitHub milestone.
 - Maintainers can generate release-note drafts with the Milestone Notes workflow and
   [`docs/milestones.md`](docs/milestones.md).

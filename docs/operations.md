@@ -90,8 +90,9 @@ Run the full local check gate:
 ./scripts/check.sh
 ```
 
-The project expects Go `1.26.3`, GoReleaser `v2.16.0`, Gitleaks `v8.30.1`,
-actionlint `v1.7.12`, and govulncheck `v1.1.4`.
+The project expects Go `1.26.3`, GoReleaser `v2.16.0`, Syft for release SBOM
+generation, Gitleaks `v8.30.1`, actionlint `v1.7.12`, and govulncheck
+`v1.1.4`.
 
 ## Milestone practice
 

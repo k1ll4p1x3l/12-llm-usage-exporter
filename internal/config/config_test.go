@@ -168,3 +168,23 @@ func TestValidateRejectsEnabledJSONWithoutPath(t *testing.T) {
 		t.Fatal("expected empty json path error")
 	}
 }
+
+func TestStarterYAMLLoads(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.StarterConfig()
+	path := filepath.Join(t.TempDir(), "config.yaml")
+	if err := os.WriteFile(path, config.StarterYAML(cfg), 0o600); err != nil {
+		t.Fatalf("write starter config: %v", err)
+	}
+	loaded, err := config.Load(path)
+	if err != nil {
+		t.Fatalf("load starter config: %v", err)
+	}
+	if !loaded.Prometheus.Enabled {
+		t.Fatal("expected starter config to enable prometheus")
+	}
+	if len(loaded.Providers) != 1 || loaded.Providers[0].Type != "codex" {
+		t.Fatalf("unexpected providers: %#v", loaded.Providers)
+	}
+}

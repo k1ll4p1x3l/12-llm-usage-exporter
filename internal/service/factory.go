@@ -22,7 +22,7 @@ func BuildCollectors(cfg config.Config) ([]collectors.Collector, error) {
 				Args:    provider.Args,
 				Timeout: provider.Timeout,
 			})
-			instances = append(instances, codex.NewCollector(provider.Name, client))
+			instances = append(instances, codex.NewCollector(provider.Name, codex.NewPolicyClient(client)))
 		default:
 			return nil, fmt.Errorf("unsupported provider type: %s", provider.Type)
 		}

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/platform"
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
@@ -74,7 +75,7 @@ type rawConfig struct {
 }
 
 func Default() Config {
-	return Config{
+	cfg := Config{
 		PollInterval: time.Duration(DefaultPollIntervalSeconds) * time.Second,
 		JSONOutput: JSONOutputConfig{
 			Enabled: true,
@@ -96,6 +97,68 @@ func Default() Config {
 			},
 		},
 	}
+	if paths, err := platform.DefaultPaths(); err == nil {
+		cfg.JSONOutput.Path = paths.StatePath
+	}
+	return cfg
+}
+
+func StarterConfig() Config {
+	cfg := Default()
+	cfg.Prometheus.Enabled = true
+	return cfg
+}
+
+func StarterYAML(cfg Config) []byte {
+	provider := ProviderConfig{}
+	if len(cfg.Providers) > 0 {
+		provider = cfg.Providers[0]
+	}
+	if provider.Name == "" {
+		provider.Name = "codex"
+	}
+	if provider.Type == "" {
+		provider.Type = "codex"
+	}
+	if provider.Command == "" {
+		provider.Command = "codex"
+	}
+	if len(provider.Args) == 0 {
+		provider.Args = []string{"appserver"}
+	}
+	if provider.Timeout == 0 {
+		provider.Timeout = 10 * time.Second
+	}
+
+	return []byte(fmt.Sprintf(`poll_interval: %s
+json_output:
+  enabled: %t
+  path: %q
+  pretty: %t
+prometheus:
+  enabled: %t
+  listen_address: %q
+providers:
+  - name: %q
+    type: %q
+    enabled: %t
+    command: %q
+    timeout: %s
+    args:
+%s`, cfg.PollInterval, cfg.JSONOutput.Enabled, cfg.JSONOutput.Path, cfg.JSONOutput.Pretty,
+		cfg.Prometheus.Enabled, cfg.Prometheus.ListenAddress, provider.Name, provider.Type,
+		provider.Enabled, provider.Command, provider.Timeout, formatArgs(provider.Args)))
+}
+
+func formatArgs(args []string) string {
+	if len(args) == 0 {
+		return "      []\n"
+	}
+	var b strings.Builder
+	for _, arg := range args {
+		b.WriteString(fmt.Sprintf("      - %q\n", arg))
+	}
+	return b.String()
 }
 
 func Load(path string) (Config, error) {

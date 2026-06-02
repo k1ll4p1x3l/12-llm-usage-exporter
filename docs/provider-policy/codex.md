@@ -7,6 +7,7 @@ provider: codex
 ## Allowed operations
 
 - `initialize` for JSON-RPC session setup only.
+- `initialized` notification after successful JSON-RPC session setup.
 - `account/read` with `refreshToken: false`.
 - `account/rateLimits/read`.
 
@@ -23,4 +24,7 @@ provider: codex
 
 - `account/read`: read-only account metadata only.
 - `account/rateLimits/read`: normalize provider limits into `usage_windows`.
+  Current App Server bucket responses are mapped from `rateLimitsByLimitId`
+  when present and fall back to the backward-compatible single-bucket or legacy
+  list shapes.
 - Schema drift must fail the current snapshot with provider status `error`.

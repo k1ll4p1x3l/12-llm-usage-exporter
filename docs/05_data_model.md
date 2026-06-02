@@ -15,6 +15,9 @@
 - Provider status (`ok` / `error`)
 - Account block with hashed account identifier and optional plan metadata
 - Usage windows with `limit_id`, `limit_name`, `used`, `limit`, `used_percent`, `window_duration_mins`, and optional `resets_at`
+- Providers that expose only percentage-based quota windows may normalize
+  `used` and `limit` into percent units (`used_percent` and `100`) while keeping
+  `used_percent` as the authoritative percentage field.
 
 ## Prometheus mapping
 
