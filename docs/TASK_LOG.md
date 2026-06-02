@@ -383,3 +383,83 @@ Continue on branch `codex/final-0.4-checkpoint`. Apply
 `./scripts/bootstrap-github-settings.sh`, verify branch protection shows
 `required_approving_review_count: 0`, run `./scripts/check.sh`, push the branch,
 wait for PR #9 checks, merge through the normal PR path, and verify `main`.
+
+## Checkpoint 2026-06-02 01:47 Europe/Berlin
+
+### Goal
+
+Implement first beta release readiness for `v0.5.0-beta.1`: cross-platform CLI
+setup and diagnostics, current Codex App Server data mapping, and portable
+Linux/macOS/Windows release artifacts with SBOM support.
+
+### Completed
+
+- Added `init` CLI command for starter YAML config generation with safe
+  overwrite behavior.
+- Added `doctor` CLI command for config validation, Codex command resolution,
+  JSON output checks, Prometheus bind checks, and read-only Codex collection
+  probing without writing snapshots.
+- Added OS-specific default config and state paths for Linux, macOS, and
+  Windows.
+- Updated Codex App Server transport handling:
+  - accepts responses that omit the JSON-RPC version field,
+  - skips notifications while waiting for matching response ids,
+  - sends `initialized` after successful `initialize`,
+  - resolves non-path Codex commands through `PATH`.
+- Added a Codex RPC policy wrapper that rejects non-allowlisted calls before
+  transport.
+- Updated Codex rate-limit mapping for current `rateLimitsByLimitId` bucket
+  responses while keeping legacy flat-list fixture support.
+- Expanded GoReleaser targets to Linux, macOS, and Windows for `amd64` and
+  `arm64`, with Windows ZIP archives and archive SBOM generation.
+- Added cross-OS GitHub Actions unit-test job while keeping the existing `ci`
+  required-check name stable.
+- Updated README, deployment, release, operations, source log, roadmap, risk,
+  data-model, provider-policy, versions, and changelog documentation.
+- Hardened local check scripts so ignored local caches under `.codex/state`,
+  `dist`, `vendor`, `cache`, and `tmp` are not treated as source/public content.
+- Installed Syft `v1.44.0` into ignored `.codex/state/bin` for local release
+  validation.
+
+### Changed Files
+
+- CLI/config/platform: `cmd/llm-usage-exporter/*`, `internal/config/*`,
+  `internal/platform/*`.
+- Codex collector/client: `internal/collectors/codex/*`,
+  `internal/service/factory.go`.
+- Release/automation: `.github/workflows/ci.yml`, `.goreleaser.yaml`,
+  `scripts/check.sh`, `scripts/dev-env-check.sh`,
+  `scripts/public_repo_sanity_check.py`.
+- Docs: `README.md`, `CHANGELOG.md`, `VERSIONS.md`, `docs/*`,
+  `docs/provider-policy/codex.md`.
+
+### Tests / Checks
+
+- `GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache go test ./...`: pass.
+- `GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache go vet ./...`: pass.
+- `goreleaser check`: pass.
+- `python3 scripts/public_repo_sanity_check.py`: pass.
+- `GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache ./scripts/check.sh`:
+  failed in sandbox at `govulncheck` DNS lookup, then passed with network
+  permission.
+- `PATH=$PWD/.codex/state/bin:$PATH GOCACHE=$PWD/.codex/state/go-build GOMODCACHE=$PWD/.codex/state/go-mod-cache TMPDIR=$PWD/.codex/state/tmp ./scripts/check.sh`:
+  pass, including `goreleaser healthcheck` with Syft.
+- `PATH=$PWD/.codex/state/bin:$PATH GOCACHE=$PWD/.codex/state/go-build GOMODCACHE=$PWD/.codex/state/go-mod-cache TMPDIR=$PWD/.codex/state/tmp goreleaser release --snapshot --skip=publish --clean`:
+  pass; produced Linux/macOS/Windows `amd64`/`arm64` archives, checksums, and
+  archive SBOMs under ignored `dist/`.
+
+### Risks / Open Points
+
+- `v0.5.0-beta.1` is implemented locally but not tagged or published.
+- CI cross-OS behavior still needs remote GitHub Actions confirmation after PR
+  creation because local validation only ran on the current Linux host.
+- Syft is now required for full local release validation and release SBOM
+  generation.
+- Codex App Server remains a moving interface; source assumptions were refreshed
+  against official docs on 2026-06-02 and should be rechecked before tagging.
+
+### Next Safe Step
+
+- Review the diff, commit the beta implementation, push a new branch, open a
+  PR assigned to milestone `0.5-beta`, and verify the remote cross-OS workflow
+  plus release workflow dry run before tagging `v0.5.0-beta.1`.

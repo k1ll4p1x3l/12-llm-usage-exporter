@@ -21,15 +21,19 @@ const (
 )
 
 type rpcRequest struct {
-	JSONRPC string `json:"jsonrpc"`
-	ID      int64  `json:"id"`
-	Method  string `json:"method"`
-	Params  any    `json:"params,omitempty"`
+	ID     int64  `json:"id"`
+	Method string `json:"method"`
+	Params any    `json:"params,omitempty"`
+}
+
+type rpcNotification struct {
+	Method string `json:"method"`
+	Params any    `json:"params,omitempty"`
 }
 
 type rpcResponse struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      int64           `json:"id"`
+	JSONRPC string          `json:"jsonrpc,omitempty"`
+	ID      *int64          `json:"id,omitempty"`
 	Result  json.RawMessage `json:"result"`
 	Error   *rpcError       `json:"error"`
 }
@@ -42,6 +46,7 @@ type rpcError struct {
 
 type RPCClient interface {
 	Call(ctx context.Context, method string, params any, out any) error
+	Notify(ctx context.Context, method string, params any) error
 	Close() error
 }
 
@@ -88,9 +93,9 @@ func (c *AppServerClient) ensureStarted(ctx context.Context) error {
 		c.cfg.MaxMessageBytes = defaultMaxMessageBytes
 	}
 
-	command := strings.TrimSpace(c.cfg.Command)
-	if command == "" {
-		command = "codex"
+	command, err := ResolveCommand(c.cfg.Command)
+	if err != nil {
+		return err
 	}
 
 	if err := ctx.Err(); err != nil {
@@ -138,45 +143,74 @@ func (c *AppServerClient) Call(ctx context.Context, method string, params any, o
 	id := c.nextID
 	c.nextID++
 	request := rpcRequest{
-		JSONRPC: "2.0",
-		ID:      id,
-		Method:  method,
-		Params:  params,
+		ID:     id,
+		Method: method,
+		Params: params,
 	}
 	if err := c.encoder.Encode(&request); err != nil {
 		return fmt.Errorf("write request: %w", err)
 	}
 
-	raw, err := c.readMessageWithContext(callCtx)
-	if err != nil {
+	for {
+		raw, err := c.readMessageWithContext(callCtx)
+		if err != nil {
+			return err
+		}
+
+		var response rpcResponse
+		if err := json.Unmarshal(raw, &response); err != nil {
+			return fmt.Errorf("parse response: %w", err)
+		}
+		if response.ID == nil {
+			continue
+		}
+		if response.JSONRPC != "" && response.JSONRPC != "2.0" {
+			return fmt.Errorf("invalid jsonrpc version: %q", response.JSONRPC)
+		}
+		if *response.ID != id {
+			return fmt.Errorf("response id mismatch: expected %d got %d", id, *response.ID)
+		}
+		if response.Error != nil {
+			return fmt.Errorf("rpc error (%d): %s", response.Error.Code, response.Error.Message)
+		}
+		if out == nil {
+			return nil
+		}
+		if rm, ok := out.(*json.RawMessage); ok {
+			*rm = append((*rm)[0:0], response.Result...)
+			return nil
+		}
+		if len(response.Result) == 0 {
+			return nil
+		}
+		if err := json.Unmarshal(response.Result, out); err != nil {
+			return fmt.Errorf("unmarshal result: %w", err)
+		}
+		return nil
+	}
+}
+
+func (c *AppServerClient) Notify(ctx context.Context, method string, params any) error {
+	if method == "" {
+		return fmt.Errorf("empty method")
+	}
+
+	callCtx, cancel := c.contextWithTimeout(ctx)
+	defer cancel()
+
+	if err := c.ensureStarted(callCtx); err != nil {
 		return err
 	}
 
-	var response rpcResponse
-	if err := json.Unmarshal(raw, &response); err != nil {
-		return fmt.Errorf("parse response: %w", err)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	notification := rpcNotification{
+		Method: method,
+		Params: params,
 	}
-	if response.JSONRPC != "2.0" {
-		return fmt.Errorf("invalid jsonrpc version: %q", response.JSONRPC)
-	}
-	if response.ID != id {
-		return fmt.Errorf("response id mismatch: expected %d got %d", id, response.ID)
-	}
-	if response.Error != nil {
-		return fmt.Errorf("rpc error (%d): %s", response.Error.Code, response.Error.Message)
-	}
-	if out == nil {
-		return nil
-	}
-	if rm, ok := out.(*json.RawMessage); ok {
-		*rm = append((*rm)[0:0], response.Result...)
-		return nil
-	}
-	if len(response.Result) == 0 {
-		return nil
-	}
-	if err := json.Unmarshal(response.Result, out); err != nil {
-		return fmt.Errorf("unmarshal result: %w", err)
+	if err := c.encoder.Encode(&notification); err != nil {
+		return fmt.Errorf("write notification: %w", err)
 	}
 	return nil
 }
@@ -284,6 +318,25 @@ func (c *AppServerClient) maxMessageBytes() int {
 		return defaultMaxMessageBytes
 	}
 	return c.cfg.MaxMessageBytes
+}
+
+func ResolveCommand(command string) (string, error) {
+	command = strings.TrimSpace(command)
+	if command == "" {
+		command = "codex"
+	}
+	if isExplicitPath(command) {
+		return command, nil
+	}
+	resolved, err := exec.LookPath(command)
+	if err != nil {
+		return "", fmt.Errorf("resolve command %q: %w", command, err)
+	}
+	return resolved, nil
+}
+
+func isExplicitPath(command string) bool {
+	return strings.ContainsAny(command, `/\`)
 }
 
 func discardHeader(reader *bufio.Reader, maxBytes int) error {

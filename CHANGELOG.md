@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Added first beta release implementation work:
+  - `init` CLI command for starter config generation.
+  - `doctor` CLI command for config, command, output, metrics, and read-only Codex collection diagnostics.
+  - OS-specific default config and snapshot paths for Linux, macOS, and Windows.
+  - Cross-OS unit-test workflow coverage for Ubuntu, macOS, and Windows.
+  - GoReleaser targets for Linux, macOS, and Windows on `amd64` and `arm64`.
+  - Syft release-toolchain checks for archive SBOM generation.
+- Updated Codex App Server integration:
+  - Uses current `clientInfo` initialization shape plus `initialized` notification.
+  - Accepts App Server responses that omit the JSON-RPC version field.
+  - Skips App Server notifications while waiting for matching responses.
+  - Resolves non-path Codex commands through `PATH`.
+  - Enforces an explicit Codex RPC allowlist before transport calls.
+  - Supports current `account/rateLimits/read` bucket responses with `rateLimitsByLimitId`.
 - Added initial public implementation scaffold for `llm-usage-exporter`.
 - Added:
   - `go.mod` and Go project layout.

@@ -11,10 +11,12 @@
 7. Redact account identifiers before persistence and export.
 8. Expose CLI commands for serve, one-shot snapshot, config validation, and version.
 9. Build CI, security checks, and release workflow.
+10. Provide first-use CLI setup and diagnostics for beta users.
 
 ## Non-functional requirements
 
 - Linux primary target for pre-alpha.
+- macOS, Linux, and Windows are beta targets through portable release archives.
 - No login/refresh/token credential collection.
 - No UI scraping and no secret persistence.
 - Default public docs and interfaces in English.

@@ -95,10 +95,16 @@ check_gitleaks() {
   log "gitleaks installed; source builds may not embed the version string."
 }
 
+check_syft() {
+  require_command syft || return
+  log "syft installed for release SBOM generation."
+}
+
 main() {
   check_go
   check_gh
   check_goreleaser
+  check_syft
   check_gitleaks
   check_actionlint
   check_govulncheck

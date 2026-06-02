@@ -8,7 +8,12 @@ export GOMODCACHE="${GOMODCACHE:-$HOME/.cache/llm-usage-exporter/go-mod-cache}"
 mkdir -p "$GOCACHE" "$GOMODCACHE"
 
 echo "[check] gofmt"
-if [[ -n "$(find . -name '*.go' -type f -print0 | xargs -0 gofmt -l)" ]]; then
+if [[ -n "$(find . \
+  -path './.codex' -prune -o \
+  -path './.git' -prune -o \
+  -path './dist' -prune -o \
+  -path './vendor' -prune -o \
+  -name '*.go' -type f -print0 | xargs -0 gofmt -l)" ]]; then
   echo "Go files are not formatted." >&2
   exit 1
 fi
@@ -33,6 +38,7 @@ python3 scripts/verify_codex_agent_pack.py
 python3 scripts/public_repo_sanity_check.py
 
 echo "[check] goreleaser"
+goreleaser healthcheck
 goreleaser check
 
 echo "[check] ok"

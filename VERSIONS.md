@@ -1,12 +1,13 @@
 # Release Baseline
 
-Current pre-release baseline: `0.0.0-dev`
+Current pre-release baseline: `0.5.0-beta.1-dev`
 
 - Initial go implementation is prepared for local build and iteration.
 - No public v1 semantics and no signed production release yet.
 - Development and CI baseline: Go `1.26.3`.
 - User-local maintainer tools:
   - GoReleaser `v2.16.0`
+  - Syft for release SBOM generation
   - Gitleaks `v8.30.1`
   - actionlint `v1.7.12`
   - govulncheck `v1.1.4`
@@ -20,6 +21,7 @@ Current pre-release baseline: `0.0.0-dev`
 - 0.2.0: Integration tests with mocked JSON-RPC fixtures and release hardening.
 - 0.3.0: Provider policy coverage with safe deferral where no read-only source exists.
 - 0.4.0: Public project operations baseline (milestone process, release-note automation, contribution tooling).
+- 0.5.0-beta.1: First beta with cross-platform CLI setup, diagnostics, current Codex App Server rate-limit mapping, and Linux/macOS/Windows release archives.
 
 ## GitHub milestone mapping
 
@@ -27,3 +29,4 @@ Current pre-release baseline: `0.0.0-dev`
 - `0.2` maps to hardening and operational quality work.
 - `0.3` maps to provider policy coverage and safe provider-candidate deferral.
 - `0.4` maps to public operations and release automation.
+- `0.5-beta` maps to first beta release readiness across macOS, Linux, and Windows.

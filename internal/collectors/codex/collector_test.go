@@ -39,6 +39,11 @@ func (f *fakeRPCClient) Call(_ context.Context, method string, params any, out a
 	return json.Unmarshal(raw, out)
 }
 
+func (f *fakeRPCClient) Notify(_ context.Context, method string, params any) error {
+	f.calls = append(f.calls, rpcCall{method: method, params: params})
+	return nil
+}
+
 func (f *fakeRPCClient) Close() error { return nil }
 
 func TestCollectUsesReadOnlyCodexCalls(t *testing.T) {
@@ -66,15 +71,69 @@ func TestCollectUsesReadOnlyCodexCalls(t *testing.T) {
 	if len(snapshot.UsageWindows) != 1 || snapshot.UsageWindows[0].LimitID != "rpm" {
 		t.Fatalf("unexpected windows: %#v", snapshot.UsageWindows)
 	}
-	if len(client.calls) != 3 {
+	if len(client.calls) != 4 {
 		t.Fatalf("expected initialize/account/rate limit calls, got %#v", client.calls)
 	}
-	if client.calls[1].method != policyMethodAccountRead {
+	if client.calls[0].method != policyMethodInitialize {
+		t.Fatalf("unexpected first call: %#v", client.calls[0])
+	}
+	if client.calls[1].method != policyMethodInitialized {
 		t.Fatalf("unexpected second call: %#v", client.calls[1])
 	}
-	params, ok := client.calls[1].params.(map[string]any)
+	if client.calls[2].method != policyMethodAccountRead {
+		t.Fatalf("unexpected third call: %#v", client.calls[2])
+	}
+	params, ok := client.calls[2].params.(map[string]any)
 	if !ok || params["refreshToken"] != false {
-		t.Fatalf("account/read must pass refreshToken=false, got %#v", client.calls[1].params)
+		t.Fatalf("account/read must pass refreshToken=false, got %#v", client.calls[2].params)
+	}
+}
+
+func TestCollectNormalizesCurrentCodexRateLimitBuckets(t *testing.T) {
+	t.Parallel()
+
+	client := &fakeRPCClient{
+		errs: map[string]error{},
+		raw: map[string]json.RawMessage{
+			policyMethodAccountRead: json.RawMessage(`{"account":{"email":"user@example.com","planType":"pro"}}`),
+			policyMethodRateLimitsRead: json.RawMessage(`{
+				"rateLimits": {
+					"limitId": "codex",
+					"limitName": null,
+					"primary": {"usedPercent": 25, "windowDurationMins": 15, "resetsAt": 1730947200},
+					"secondary": null
+				},
+				"rateLimitsByLimitId": {
+					"codex": {
+						"limitId": "codex",
+						"limitName": "Codex",
+						"primary": {"usedPercent": 25, "windowDurationMins": 15, "resetsAt": 1730947200},
+						"secondary": {"usedPercent": 42, "windowDurationMins": 60, "resetsAt": 1730950800}
+					}
+				}
+			}`),
+		},
+	}
+
+	collector := NewCollector("codex-main", client)
+	snapshot, err := collector.Collect(context.Background())
+	if err != nil {
+		t.Fatalf("Collect returned error: %v", err)
+	}
+	if snapshot.Account == nil || snapshot.Account.ProviderAccountID == "" {
+		t.Fatalf("expected hashed account info: %#v", snapshot.Account)
+	}
+	if len(snapshot.UsageWindows) != 2 {
+		t.Fatalf("expected two usage windows, got %#v", snapshot.UsageWindows)
+	}
+	if snapshot.UsageWindows[0].LimitID != "codex" || snapshot.UsageWindows[0].Used != 25 || snapshot.UsageWindows[0].Limit != 100 {
+		t.Fatalf("unexpected primary window: %#v", snapshot.UsageWindows[0])
+	}
+	if snapshot.UsageWindows[1].LimitID != "codex.secondary" || snapshot.UsageWindows[1].UsedPercent != 42 {
+		t.Fatalf("unexpected secondary window: %#v", snapshot.UsageWindows[1])
+	}
+	if snapshot.UsageWindows[0].ResetsAt == nil {
+		t.Fatal("expected reset time from unix timestamp")
 	}
 }
 
