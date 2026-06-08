@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -20,61 +22,164 @@ import (
 	"github.com/k1ll4p1x3l/12-llm-usage-exporter/internal/service"
 )
 
-var version = "0.0.0-dev"
+var version = "0.5.0-beta.1-dev"
 
 func main() {
-	if len(os.Args) < 2 {
-		printUsage()
-		os.Exit(2)
+	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
+}
+
+func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) < 1 {
+		printUsage(stderr)
+		return 2
+	}
+	if isHelpArg(args[0]) {
+		if args[0] == "help" && len(args) > 1 {
+			if !printCommandUsage(args[1], stdout) {
+				fmt.Fprintf(stderr, "unknown command %q\n", args[1])
+				printUsage(stderr)
+				return 2
+			}
+			return 0
+		}
+		printUsage(stdout)
+		return 0
 	}
 
-	switch os.Args[1] {
+	var err error
+	switch args[0] {
 	case "init":
-		if err := runInit(os.Args[2:]); err != nil {
-			log.Fatal(err)
-		}
+		err = runInitWithOutput(args[1:], stdout)
 	case "doctor":
-		if err := runDoctor(os.Args[2:]); err != nil {
-			log.Fatal(err)
-		}
+		err = runDoctorWithOutput(args[1:], stdout)
 	case "serve":
-		if err := runServe(os.Args[2:]); err != nil {
-			log.Fatal(err)
-		}
+		err = runServeWithOutput(args[1:], stdout)
 	case "snapshot":
-		if err := runSnapshot(os.Args[2:]); err != nil {
-			log.Fatal(err)
-		}
+		err = runSnapshotWithOutput(args[1:], stdout)
 	case "validate-config":
-		if err := runValidateConfig(os.Args[2:]); err != nil {
-			log.Fatal(err)
-		}
+		err = runValidateConfigWithOutput(args[1:], stdout)
 	case "version":
-		fmt.Println(version)
+		fmt.Fprintln(stdout, version)
 	default:
-		fmt.Printf("unknown command %q\n", os.Args[1])
-		printUsage()
-		os.Exit(2)
+		fmt.Fprintf(stderr, "unknown command %q\n", args[0])
+		printUsage(stderr)
+		return 2
+	}
+
+	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	return 0
+}
+
+func isHelpArg(arg string) bool {
+	return arg == "-h" || arg == "--help" || arg == "help"
+}
+
+func printUsage(out io.Writer) {
+	fmt.Fprintln(out, `usage: llm-usage-exporter <command> [flags]
+
+Commands:
+  init             Write a starter YAML config
+  doctor           Diagnose config, Codex, outputs, and collection
+  serve            Run the scheduled exporter and metrics endpoint
+  snapshot         Collect once and print a JSON snapshot
+  validate-config  Load and print the normalized config
+  version          Print the binary version
+
+Run "llm-usage-exporter help <command>" for command-specific flags.`)
+}
+
+func printCommandUsage(command string, out io.Writer) bool {
+	fs := commandFlagSet(command, out)
+	if fs == nil {
+		return false
+	}
+	fs.Usage()
+	return true
+}
+
+func commandFlagSet(name string, out io.Writer) *flag.FlagSet {
+	switch name {
+	case "init":
+		return initFlagSet(out)
+	case "doctor":
+		return doctorFlagSet(out)
+	case "serve":
+		return serveFlagSet(out)
+	case "snapshot":
+		return snapshotFlagSet(out)
+	case "validate-config":
+		return validateConfigFlagSet(out)
+	default:
+		return nil
 	}
 }
 
-func printUsage() {
-	fmt.Println("usage: llm-usage-exporter <init|doctor|serve|snapshot|validate-config|version> [flags]")
+func newCommandFlagSet(name, summary string, out io.Writer) *flag.FlagSet {
+	fs := flag.NewFlagSet(name, flag.ContinueOnError)
+	fs.SetOutput(out)
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "usage: llm-usage-exporter %s [flags]\n\n%s\n\nFlags:\n", name, summary)
+		fs.PrintDefaults()
+	}
+	return fs
+}
+
+func initFlagSet(out io.Writer) *flag.FlagSet {
+	fs := newCommandFlagSet("init", "Write an OS-appropriate starter YAML config.", out)
+	fs.String("config", "", "path to write YAML config")
+	fs.Bool("force", false, "overwrite an existing config")
+	return fs
+}
+
+func doctorFlagSet(out io.Writer) *flag.FlagSet {
+	fs := newCommandFlagSet("doctor", "Check config, Codex command discovery, outputs, metrics, and collection.", out)
+	fs.String("config", "", "path to JSON/YAML/TOML config")
+	fs.Bool("json", false, "print machine-readable JSON")
+	return fs
+}
+
+func serveFlagSet(out io.Writer) *flag.FlagSet {
+	fs := newCommandFlagSet("serve", "Run the exporter loop, or a single cycle with --once.", out)
+	fs.String("config", "", "path to JSON/YAML/TOML config")
+	fs.Bool("once", false, "run one cycle and exit")
+	return fs
+}
+
+func snapshotFlagSet(out io.Writer) *flag.FlagSet {
+	fs := newCommandFlagSet("snapshot", "Collect once and print the JSON snapshot.", out)
+	fs.String("config", "", "path to JSON/YAML/TOML config")
+	return fs
+}
+
+func validateConfigFlagSet(out io.Writer) *flag.FlagSet {
+	fs := newCommandFlagSet("validate-config", "Load, validate, and print the normalized config.", out)
+	fs.String("config", "", "path to JSON/YAML/TOML config")
+	return fs
 }
 
 func runInit(args []string) error {
-	fs := flag.NewFlagSet("init", flag.ContinueOnError)
-	configPath := fs.String("config", "", "path to write YAML config")
-	force := fs.Bool("force", false, "overwrite an existing config")
+	return runInitWithOutput(args, os.Stdout)
+}
+
+func runInitWithOutput(args []string, out io.Writer) error {
+	fs := initFlagSet(out)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	configPath := fs.Lookup("config").Value.String()
+	force := fs.Lookup("force").Value.String() == "true"
 
-	path, err := defaultConfigPath(*configPath)
+	path, err := defaultConfigPath(configPath)
 	if err != nil {
 		return err
 	}
-	if _, err := os.Stat(path); err == nil && !*force {
+	if _, err := os.Stat(path); err == nil && !force {
 		return fmt.Errorf("config already exists: %s (use --force to overwrite)", path)
 	} else if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("inspect config path: %w", err)
@@ -89,32 +194,36 @@ func runInit(args []string) error {
 	if err := os.WriteFile(path, config.StarterYAML(cfg), 0o600); err != nil {
 		return fmt.Errorf("write config: %w", err)
 	}
-	fmt.Printf("wrote config: %s\n", path)
+	fmt.Fprintf(out, "wrote config: %s\n", path)
 	return nil
 }
 
 func runDoctor(args []string) error {
-	fs := flag.NewFlagSet("doctor", flag.ContinueOnError)
-	configPath := fs.String("config", "", "path to JSON/YAML/TOML config")
-	jsonOutput := fs.Bool("json", false, "print machine-readable JSON")
+	return runDoctorWithOutput(args, os.Stdout)
+}
+
+func runDoctorWithOutput(args []string, out io.Writer) error {
+	fs := doctorFlagSet(out)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	configPath := fs.Lookup("config").Value.String()
+	jsonOutput := fs.Lookup("json").Value.String() == "true"
 
-	report := buildDoctorReport(*configPath)
-	if *jsonOutput {
-		out, err := json.MarshalIndent(report, "", "  ")
+	report := buildDoctorReport(configPath)
+	if jsonOutput {
+		payload, err := json.MarshalIndent(report, "", "  ")
 		if err != nil {
 			return err
 		}
-		fmt.Println(string(out))
+		fmt.Fprintln(out, string(payload))
 	} else {
-		fmt.Printf("doctor status: %s\n", report.Status)
+		fmt.Fprintf(out, "doctor status: %s\n", report.Status)
 		if report.ConfigPath != "" {
-			fmt.Printf("config: %s\n", report.ConfigPath)
+			fmt.Fprintf(out, "config: %s\n", report.ConfigPath)
 		}
 		for _, check := range report.Checks {
-			fmt.Printf("[%s] %s: %s\n", check.Status, check.Name, check.Message)
+			fmt.Fprintf(out, "[%s] %s: %s\n", check.Status, check.Name, check.Message)
 		}
 	}
 	if report.Status == "error" {
@@ -124,14 +233,18 @@ func runDoctor(args []string) error {
 }
 
 func runServe(args []string) error {
-	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
-	configPath := fs.String("config", "", "path to JSON/YAML/TOML config")
-	once := fs.Bool("once", false, "run one cycle and exit")
+	return runServeWithOutput(args, os.Stdout)
+}
+
+func runServeWithOutput(args []string, out io.Writer) error {
+	fs := serveFlagSet(out)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	configPath := fs.Lookup("config").Value.String()
+	once := fs.Lookup("once").Value.String() == "true"
 
-	cfg, err := config.Load(existingConfigOrDefault(*configPath))
+	cfg, err := config.Load(existingConfigOrDefault(configPath))
 	if err != nil {
 		return err
 	}
@@ -156,7 +269,7 @@ func runServe(args []string) error {
 		}()
 	}
 
-	if *once {
+	if once {
 		_, err := runner.RunOnce(ctx)
 		return err
 	}
@@ -164,13 +277,17 @@ func runServe(args []string) error {
 }
 
 func runSnapshot(args []string) error {
-	fs := flag.NewFlagSet("snapshot", flag.ContinueOnError)
-	configPath := fs.String("config", "", "path to JSON/YAML/TOML config")
+	return runSnapshotWithOutput(args, os.Stdout)
+}
+
+func runSnapshotWithOutput(args []string, out io.Writer) error {
+	fs := snapshotFlagSet(out)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	configPath := fs.Lookup("config").Value.String()
 
-	cfg, err := config.Load(existingConfigOrDefault(*configPath))
+	cfg, err := config.Load(existingConfigOrDefault(configPath))
 	if err != nil {
 		return err
 	}
@@ -186,30 +303,34 @@ func runSnapshot(args []string) error {
 	if collectErr != nil {
 		log.Printf("snapshot warning: %v", collectErr)
 	}
-	out, err := json.MarshalIndent(snapshot, "", "  ")
+	payload, err := json.MarshalIndent(snapshot, "", "  ")
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(out))
+	fmt.Fprintln(out, string(payload))
 	return collectErr
 }
 
 func runValidateConfig(args []string) error {
-	fs := flag.NewFlagSet("validate-config", flag.ContinueOnError)
-	configPath := fs.String("config", "", "path to JSON/YAML/TOML config")
+	return runValidateConfigWithOutput(args, os.Stdout)
+}
+
+func runValidateConfigWithOutput(args []string, out io.Writer) error {
+	fs := validateConfigFlagSet(out)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
+	configPath := fs.Lookup("config").Value.String()
 
-	cfg, err := config.Load(existingConfigOrDefault(*configPath))
+	cfg, err := config.Load(existingConfigOrDefault(configPath))
 	if err != nil {
 		return err
 	}
-	out, err := json.MarshalIndent(cfg, "", "  ")
+	payload, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(out))
+	fmt.Fprintln(out, string(payload))
 	return nil
 }
 

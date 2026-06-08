@@ -463,3 +463,78 @@ Linux/macOS/Windows release artifacts with SBOM support.
 - Review the diff, commit the beta implementation, push a new branch, open a
   PR assigned to milestone `0.5-beta`, and verify the remote cross-OS workflow
   plus release workflow dry run before tagging `v0.5.0-beta.1`.
+
+## Checkpoint 2026-06-08 Europe/Berlin
+
+### Goal
+
+Finish first usable beta release preparation and publish `v0.5.0-beta.1`.
+
+### Completed
+
+- Started release branch `codex/release-v0.5.0-beta.1` from current `main`.
+- Updated CI, security, release, local environment, and operations Go pins from
+  `1.26.3` to `1.26.4`.
+- Added Syft setup to the GitHub release workflow so GoReleaser can generate
+  archive SBOMs on the release runner.
+- Updated the Codex default App Server command argument from `appserver` to
+  `app-server` after verifying the installed `codex-cli 0.134.0` help output.
+- Added top-level and command-specific CLI help handling with tests.
+- Set the development fallback version to `0.5.0-beta.1-dev`; tagged release
+  builds still inject the tag version through GoReleaser ldflags.
+- Installed Syft `v1.44.0` into ignored `.codex/state/bin` from the verified
+  release tarball for local release validation.
+- Verified live Codex collection through the current `codex app-server` path
+  with `doctor --json`, `snapshot`, and `serve --once`.
+
+### Changed Files
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/security.yml`
+- `.github/workflows/release.yml`
+- `cmd/llm-usage-exporter/main.go`
+- `cmd/llm-usage-exporter/main_test.go`
+- `internal/config/config.go`
+- `internal/config/config_test.go`
+- `examples/llm-usage-exporter.yaml`
+- `README.md`
+- `CHANGELOG.md`
+- `VERSIONS.md`
+- `docs/08_codex_implementation_brief.md`
+- `docs/99_sources.md`
+- `docs/operations.md`
+- `scripts/dev-env-check.sh`
+
+### Tests / Checks
+
+- `GOTOOLCHAIN=go1.26.4 GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache go test ./...`:
+  pass.
+- `GOTOOLCHAIN=go1.26.4 GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache go vet ./...`:
+  pass.
+- `PATH=$PWD/.codex/state/bin:$PATH GOTOOLCHAIN=go1.26.4 GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache TMPDIR=/tmp ./scripts/check.sh`:
+  pass, including `govulncheck`, actionlint, gitleaks, public sanity, and
+  GoReleaser healthcheck with Syft.
+- `PATH=$PWD/.codex/state/bin:$PATH GOTOOLCHAIN=go1.26.4 GOCACHE=/tmp/go-build GOMODCACHE=/tmp/go-mod-cache TMPDIR=/tmp goreleaser release --snapshot --skip=publish --clean`:
+  pass; produced Linux/macOS/Windows `amd64`/`arm64` archives, checksums, and
+  archive SBOMs under ignored `dist/`.
+- `llm-usage-exporter --help`, `llm-usage-exporter help doctor`, and
+  `llm-usage-exporter snapshot --help`: pass.
+- Live Codex smoke using temporary config:
+  - `init --config /tmp/llm-usage-exporter-live.yaml --force`: pass.
+  - `doctor --config /tmp/llm-usage-exporter-live.yaml --json`: pass with
+    `codex collection` status `ok`.
+  - `snapshot --config /tmp/llm-usage-exporter-live.yaml`: pass with healthy
+    Codex provider snapshot.
+  - `serve --config /tmp/llm-usage-exporter-live.yaml --once`: pass.
+
+### Risks / Open Points
+
+- The local shell still emits a missing `en_US.UTF-8` locale warning; commands
+  continue to pass under the available locale.
+- Generated `dist/`, `.codex/state/`, and temporary `/tmp` smoke artifacts must
+  be cleaned before final status review.
+
+### Next Safe Step
+
+- Commit the release-readiness fixes, push a PR to `main`, wait for required
+  checks, merge, then tag and publish `v0.5.0-beta.1`.

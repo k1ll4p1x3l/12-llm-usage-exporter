@@ -169,6 +169,18 @@ func TestValidateRejectsEnabledJSONWithoutPath(t *testing.T) {
 	}
 }
 
+func TestDefaultCodexArgsUseAppServerCommand(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.Default()
+	if len(cfg.Providers) != 1 {
+		t.Fatalf("unexpected providers: %#v", cfg.Providers)
+	}
+	if got := cfg.Providers[0].Args; len(got) != 1 || got[0] != "app-server" {
+		t.Fatalf("unexpected default Codex args: %#v", got)
+	}
+}
+
 func TestStarterYAMLLoads(t *testing.T) {
 	t.Parallel()
 
@@ -186,5 +198,8 @@ func TestStarterYAMLLoads(t *testing.T) {
 	}
 	if len(loaded.Providers) != 1 || loaded.Providers[0].Type != "codex" {
 		t.Fatalf("unexpected providers: %#v", loaded.Providers)
+	}
+	if got := loaded.Providers[0].Args; len(got) != 1 || got[0] != "app-server" {
+		t.Fatalf("unexpected starter Codex args: %#v", got)
 	}
 }

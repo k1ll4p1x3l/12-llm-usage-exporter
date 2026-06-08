@@ -13,4 +13,4 @@ providers:
     command: codex
     timeout: 10s
     args:
-      - appserver
+      - app-server

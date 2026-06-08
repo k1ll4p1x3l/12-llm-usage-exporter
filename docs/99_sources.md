@@ -6,6 +6,7 @@
 - OpenAI Developers: Codex Governance and Observability — https://developers.openai.com/codex/enterprise/governance (checked 2026-05-31)
 - OpenAI Developers: Codex Authentication — https://developers.openai.com/codex/authentication (checked 2026-05-31)
 - OpenAI Developers: Codex App Server — https://developers.openai.com/codex/app-server (checked 2026-06-02; used for App Server transport, initialize/initialized lifecycle, auth/account methods, and current `account/rateLimits/read` bucket shape)
+- Local OpenAI Codex CLI help (`codex app-server --help`, `codex-cli 0.134.0`) (checked 2026-06-08; used to align the default App Server subcommand with the installed CLI)
 - OpenAI Developers: Codex Configuration — https://developers.openai.com/codex/config (checked 2026-05-31)
 - OpenAI Developers: Codex Pricing — https://developers.openai.com/codex/pricing (checked 2026-05-31)
 - OpenAI Codex source: rate_limits.rs — https://github.com/openai/codex/blob/main/codex-rs/codex-api/src/rate_limits.rs (checked 2026-05-31)
@@ -34,6 +35,8 @@
 - Apache License 2.0 — https://www.apache.org/licenses/LICENSE-2.0 (checked 2026-05-31)
 - CodeQL code scanning — https://docs.github.com/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql (checked 2026-05-31)
 - govulncheck — https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck (checked 2026-05-31)
+- Go vulnerability GO-2026-5039 — https://pkg.go.dev/vuln/GO-2026-5039 (checked 2026-06-08; used for Go `1.26.4` release gate)
+- Go vulnerability GO-2026-5037 — https://pkg.go.dev/vuln/GO-2026-5037 (checked 2026-06-08; used for Go `1.26.4` release gate)
 
 ## Tooling and Repository Automation
 
@@ -44,6 +47,7 @@
 - actions/github-script releases — https://github.com/actions/github-script/releases/tag/v9.0.0 (checked 2026-05-31)
 - GoReleaser releases — https://github.com/goreleaser/goreleaser/releases/tag/v2.16.0 (checked 2026-05-31)
 - Anchore Syft repository and releases — https://github.com/anchore/syft (checked 2026-06-02; used for release SBOM toolchain requirement)
+- Anchore SBOM Action `download-syft` — https://github.com/anchore/sbom-action (checked 2026-06-08; used to install Syft in the release workflow before GoReleaser)
 - Gitleaks releases — https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1 (checked 2026-05-31)
 - actionlint releases — https://github.com/rhysd/actionlint/releases/tag/v1.7.12 (checked 2026-05-31)
 - Prometheus Go client module — https://pkg.go.dev/github.com/prometheus/client_golang (checked 2026-05-31)

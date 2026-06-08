@@ -92,7 +92,7 @@ func Default() Config {
 				Type:    "codex",
 				Enabled: true,
 				Command: "codex",
-				Args:    []string{"appserver"},
+				Args:    []string{"app-server"},
 				Timeout: 10 * time.Second,
 			},
 		},
@@ -124,7 +124,7 @@ func StarterYAML(cfg Config) []byte {
 		provider.Command = "codex"
 	}
 	if len(provider.Args) == 0 {
-		provider.Args = []string{"appserver"}
+		provider.Args = []string{"app-server"}
 	}
 	if provider.Timeout == 0 {
 		provider.Timeout = 10 * time.Second

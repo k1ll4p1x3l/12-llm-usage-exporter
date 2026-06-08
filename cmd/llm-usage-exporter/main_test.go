@@ -1,12 +1,75 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
+
+func TestRunTopLevelHelp(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := run([]string{"--help"}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d; stderr=%q", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "usage: llm-usage-exporter <command> [flags]") {
+		t.Fatalf("missing usage in help output: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "doctor") {
+		t.Fatalf("missing command list in help output: %q", stdout.String())
+	}
+	if stderr.Len() != 0 {
+		t.Fatalf("expected empty stderr, got %q", stderr.String())
+	}
+}
+
+func TestRunCommandHelp(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := run([]string{"help", "doctor"}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d; stderr=%q", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "usage: llm-usage-exporter doctor [flags]") {
+		t.Fatalf("missing doctor usage: %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "-json") {
+		t.Fatalf("missing doctor flags: %q", stdout.String())
+	}
+}
+
+func TestRunCommandFlagHelp(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := run([]string{"snapshot", "--help"}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("expected exit code 0, got %d; stderr=%q", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "usage: llm-usage-exporter snapshot [flags]") {
+		t.Fatalf("missing snapshot usage: %q", stdout.String())
+	}
+}
+
+func TestRunUnknownCommand(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := run([]string{"nope"}, &stdout, &stderr)
+	if code != 2 {
+		t.Fatalf("expected exit code 2, got %d", code)
+	}
+	if !strings.Contains(stderr.String(), `unknown command "nope"`) {
+		t.Fatalf("missing unknown command error: %q", stderr.String())
+	}
+}
 
 func TestRunSnapshotReturnsCollectorError(t *testing.T) {
 	exe, err := os.Executable()

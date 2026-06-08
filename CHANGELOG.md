@@ -16,6 +16,12 @@
   - Resolves non-path Codex commands through `PATH`.
   - Enforces an explicit Codex RPC allowlist before transport calls.
   - Supports current `account/rateLimits/read` bucket responses with `rateLimitsByLimitId`.
+- Prepared the first beta release:
+  - Updated CI, security, and release Go pins to `1.26.4` for current Go standard-library vulnerability fixes.
+  - Installed Syft in the release workflow before GoReleaser runs archive SBOM generation.
+  - Changed the default Codex App Server command argument to `app-server` for current Codex CLI releases.
+  - Added top-level and command-level CLI help handling.
+  - Set the development fallback version to `0.5.0-beta.1-dev`; release builds still inject the tag version.
 - Added initial public implementation scaffold for `llm-usage-exporter`.
 - Added:
   - `go.mod` and Go project layout.
