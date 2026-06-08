@@ -10,6 +10,8 @@
 ## Transport
 
 - Spawn and communicate with the local Codex app server process as configured.
+- The default local Codex CLI invocation is `codex app-server`, matching the
+  current `codex-cli 0.134.0` subcommand name.
 - Use JSON-RPC frame decoding. Current Codex App Server responses can omit the
   `jsonrpc` version field on the wire, so the client accepts either an omitted
   version or `2.0`.

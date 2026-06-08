@@ -77,7 +77,7 @@ providers:
     enabled: true
     command: codex
     timeout: 10s
-    args: ["appserver"]
+    args: ["app-server"]
 ```
 
 ## CLI
