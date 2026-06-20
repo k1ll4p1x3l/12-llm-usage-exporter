@@ -3,7 +3,7 @@ module github.com/k1ll4p1x3l/12-llm-usage-exporter
 go 1.23.0
 
 require (
-	github.com/pelletier/go-toml/v2 v2.3.1
+	github.com/pelletier/go-toml/v2 v2.4.0
 	github.com/prometheus/client_golang v1.23.2
 	gopkg.in/yaml.v3 v3.0.1
 )
