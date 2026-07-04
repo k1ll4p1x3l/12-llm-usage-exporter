@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Documented the post-release closure state:
+  - `main` is the only active branch locally and on GitHub after the first beta publication.
+  - `v0.5.0-beta.1` remains the current usable beta baseline.
+  - Environment-specific follow-up validation is deferred until after an external lab audit.
 - Added first beta release implementation work:
   - `init` CLI command for starter config generation.
   - `doctor` CLI command for config, command, output, metrics, and read-only Codex collection diagnostics.

@@ -4,10 +4,14 @@
 
 ## Current status
 
-- Development stage: beta implementation
+- Development stage: first beta release published (`v0.5.0-beta.1`)
 - Primary platforms: macOS, Linux, Windows
 - Primary language: Go
 - Primary provider: OpenAI Codex (read-only)
+
+Environment-specific follow-up validation is deferred until the operator
+completes an external lab audit. The published beta remains the current usable
+baseline.
 
 ## Architecture
 
