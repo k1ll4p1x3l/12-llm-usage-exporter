@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Documented the post-release closure state:
-  - `main` is the only active branch locally and on GitHub after the first beta publication.
+  - `main` is the only local branch after the first beta publication and the closure PR merge.
+  - Unrelated Dependabot branches and pull requests were left untouched.
   - `v0.5.0-beta.1` remains the current usable beta baseline.
   - Environment-specific follow-up validation is deferred until after an external lab audit.
 - Added first beta release implementation work:
