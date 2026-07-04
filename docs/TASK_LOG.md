@@ -538,3 +538,61 @@ Finish first usable beta release preparation and publish `v0.5.0-beta.1`.
 
 - Commit the release-readiness fixes, push a PR to `main`, wait for required
   checks, merge, then tag and publish `v0.5.0-beta.1`.
+
+## Checkpoint 2026-07-04 Europe/Berlin
+
+### Goal
+
+Close the current release-follow-up action, document the final repository
+state, and pause detailed Homelab-related validation until the operator
+completes a separate external audit.
+
+### Completed
+
+- Confirmed the local working tree is clean on `main`.
+- Confirmed local branches contain only `main`.
+- Confirmed remote refs contain only `origin/main`.
+- Confirmed GitHub reports only the `main` branch.
+- Confirmed there are no open pull requests.
+- Confirmed `main` and `origin/main` point at merge commit
+  `d023e1e8fb31803545facd92b2a29b9b3b85b2b3`.
+- Confirmed tag `v0.5.0-beta.1` points at the current `main` head.
+- Confirmed GitHub release `v0.5.0-beta.1` is published as a prerelease with
+  Linux, macOS, and Windows archives, checksums, and SBOM assets.
+- Confirmed a downloaded Linux `amd64` release archive passed checksum
+  validation and the extracted binary reported version `0.5.0-beta.1`.
+- Removed temporary release verification files, local snapshot smoke-test
+  files, ignored `dist/`, and disposable `.codex/state` tooling state.
+
+### Changed Files
+
+- `README.md`
+- `CHANGELOG.md`
+- `docs/TASK_LOG.md`
+
+### Tests / Checks
+
+- `git diff --check`: pass.
+- `python3 scripts/public_repo_sanity_check.py`: pass.
+- `GOTOOLCHAIN=local GOPATH=/tmp/go-path GOCACHE=/tmp/go-build-local GOMODCACHE=/tmp/go-mod-cache go test -p 1 ./...`:
+  pass with local Go `1.26.3`.
+- `GOTOOLCHAIN=local GOPATH=/tmp/go-path GOCACHE=/tmp/go-build-local GOMODCACHE=/tmp/go-mod-cache go vet ./...`:
+  pass with local Go `1.26.3`.
+
+### Risks / Open Points
+
+- Detailed environment-specific validation is intentionally deferred until the
+  operator completes an external lab audit and fixes any unrelated system
+  issues found there.
+- The release workflow still emitted a non-blocking GitHub Actions warning
+  about the GoReleaser action runtime moving beyond Node.js 20. Update the
+  action before GitHub enforces the newer runtime.
+- Local `GOTOOLCHAIN=go1.26.4` validation could not complete in this runner
+  because the downloaded compiler process was killed. The docs-only checkpoint
+  was validated with the installed Go `1.26.3`; CI remains the authority for
+  the pinned Go `1.26.4` matrix.
+
+### Next Safe Step
+
+- Resume feature and Homelab integration work only after the external audit is
+  complete. Start from the published `v0.5.0-beta.1` baseline on `main`.
