@@ -551,12 +551,14 @@ completes a separate external audit.
 
 - Confirmed the local working tree is clean on `main`.
 - Confirmed local branches contain only `main`.
-- Confirmed remote refs contain only `origin/main`.
-- Confirmed GitHub reports only the `main` branch.
-- Confirmed there are no open pull requests.
-- Confirmed `main` and `origin/main` point at merge commit
-  `d023e1e8fb31803545facd92b2a29b9b3b85b2b3`.
-- Confirmed tag `v0.5.0-beta.1` points at the current `main` head.
+- Confirmed remote refs initially contained only `origin/main`; a final
+  post-merge fetch later showed two unrelated Dependabot branches, which were
+  left untouched because they are outside this conversation.
+- Confirmed the closure PR was merged and its temporary branch was deleted.
+- Confirmed release merge commit `d023e1e8fb31803545facd92b2a29b9b3b85b2b3`
+  carries tag `v0.5.0-beta.1`.
+- Confirmed later closure-documentation commits advance `main` after the
+  release tag without changing the published release artifact.
 - Confirmed GitHub release `v0.5.0-beta.1` is published as a prerelease with
   Linux, macOS, and Windows archives, checksums, and SBOM assets.
 - Confirmed a downloaded Linux `amd64` release archive passed checksum
@@ -584,6 +586,9 @@ completes a separate external audit.
 - Detailed environment-specific validation is intentionally deferred until the
   operator completes an external lab audit and fixes any unrelated system
   issues found there.
+- GitHub currently has unrelated open Dependabot PRs for `actions/checkout` and
+  `github.com/pelletier/go-toml/v2`. They were not changed or merged as part of
+  this closure action.
 - The release workflow still emitted a non-blocking GitHub Actions warning
   about the GoReleaser action runtime moving beyond Node.js 20. Update the
   action before GitHub enforces the newer runtime.
