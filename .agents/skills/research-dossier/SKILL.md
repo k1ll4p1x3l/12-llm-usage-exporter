@@ -1,43 +1,63 @@
 ---
 name: research-dossier
-description: Use for structured research, comparisons, current facts, legal/technical/scientific questions, product or standards research, and source-heavy answers.
+description: Use for structured research on current, technical, legal, scientific, standards, or product questions that need credible sourcing and explicit uncertainty.
 ---
 
-# Research dossier workflow
+# Research dossier
 
-## Steps
+## Trigger
 
-1. Define the leitfrage, scope, jurisdiction/region, dates, version constraints, and deliverable.
-2. Prefer primary sources: official documentation, statutes, standards, original studies, vendor docs, release notes.
-3. Use a source credibility rubric: authority, recency, traceability, relevance, neutrality.
-4. Compare conflicting sources and name uncertainty.
-5. For fast-changing topics, include access date and exact publication/release date.
-6. Deliver executive summary, assumptions, method, findings, perspectives/risks, recommendation, next steps, sources.
+- Use for questions with volatile facts, source disputes, purchasing impact, or recommendation risk.
+- Use when a decision should rest on cited evidence rather than memory alone.
 
-## Output skeleton
+## Inputs
+
+- Leitfrage, scope, region, time frame, version constraints, and deliverable format.
+- Source policy and citation expectations.
+
+## Workflow
+
+1. Define the question precisely before searching.
+2. Prefer primary sources, then official secondary sources, then reputable third parties.
+3. Record publication date and access date for time-sensitive claims.
+4. Compare conflicting sources and identify what is confirmed, inferred, or uncertain.
+5. Separate findings, interpretation, and recommendation.
+6. End with sources that a reviewer can open directly.
+
+## Stop / Approval Rules
+
+- Stop if key claims cannot be supported by credible sources.
+- Stop before presenting outdated, jurisdiction-ambiguous, or contradicted guidance as settled fact.
+- Do not pad the answer with weak sources when evidence is thin; say it is thin.
+
+## Checks
+
+- Scope, region, and date context are explicit.
+- Important claims have direct sources.
+- Uncertainty and conflicts are visible.
+- Recommendation follows from the evidence actually gathered.
+
+## Output
 
 ```text
-## Executive Summary
+## Executive summary
 ...
 
-## Kontext & Annahmen
+## Context and assumptions
 ...
 
-## Methodik
+## Method
 ...
 
-## Ergebnisse
+## Findings
 ...
 
-## Perspektiven / Risiken
+## Risks / differing views
 ...
 
-## Empfehlung / Optionen
+## Recommendation / options
 ...
 
-## Nächste Schritte
-...
-
-## Quellen
-...
+## Sources
+- ...
 ```

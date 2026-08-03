@@ -1,49 +1,65 @@
 ---
 name: budget-aware-orchestration
-description: Use for long or costly Codex tasks where model selection, subagent fan-out, checkpoints, and usage-limit conservation matter.
+description: Use for large, expensive, or multi-agent tasks where token usage, fan-out, and checkpoint timing need explicit control.
 ---
 
 # Budget-aware orchestration
 
-Use this skill when a task may run long, spawn subagents, touch many files, or consume noticeable usage.
+## Trigger
+
+- Use when the task is long-running, likely to touch many files, or may require several tools or agents.
+- Use when usage limits, time limits, or model cost matter.
 
 ## Inputs
 
-- User goal.
-- Current `.codex/state/budget_status.json`, if present.
-- `docs/TASK_LOG.md`, if present.
-- Any explicit usage/limit status from the user or Codex UI.
+- User goal and urgency.
+- `docs/TASK_LOG.md` or equivalent checkpoint, if present.
+- Budget or usage hints from the user or environment.
+- Scope size and risk level.
 
-## Steps
+## Workflow
 
-1. Determine budget mode:
-   - `normal`: >50% remaining or unknown.
-   - `conserve`: 20–50% remaining.
-   - `low`: 5–20% remaining.
-   - `critical`: <5% remaining or explicit limit warning.
-2. Select fan-out:
-   - `normal`: up to 3–4 subagents.
-   - `conserve`: up to 2 subagents.
-   - `low`: no parallelism unless a blocker requires it.
-   - `critical`: stop after checkpoint.
-3. Prefer read-only mapping before implementation when scope is unclear.
-4. Reuse summaries and maps. Do not make multiple agents read the same large files unless they need different perspectives.
-5. At each milestone, record a checkpoint with goal, done items, changed files, checks, risks, and next safe step.
+1. Classify the task into `normal`, `conserve`, `low`, or `critical` budget mode.
+2. Choose the lightest viable exploration path first.
+3. Reuse existing maps, logs, and checkpoints instead of rereading large context.
+4. Scale concurrency only when the work truly splits cleanly.
+5. Before fan-out, assign non-overlapping responsibility/path ownership and name
+   a single primary integrator. Default maximum is four parallel subagents.
+6. Do not allow recursive delegation unless the user explicitly requested it.
+7. Rejoin through a factual ledger: result, evidence, changed paths, tests,
+   unresolved risks, and accept/revise/discard decision.
+8. Retry the same failed action at most twice. A retry must change hypothesis,
+   input, or method; stop after two rejoin cycles without new evidence.
+9. Checkpoint after each milestone with changed files, checks, risks, and next safe step.
+10. In `critical`, stop after stabilizing state and writing a resume prompt.
+
+## Stop / Approval Rules
+
+- Do not spend heavy-model or parallel budget on avoidable broad scans.
+- Do not start a new risky branch of work in `low` or `critical`.
+- Stop if validation would require a large new branch of work with unclear payoff.
+- Stop a loop that repeats the same action or review without new evidence.
+
+## Checks
+
+- Budget mode is explicit.
+- Chosen fan-out matches the budget mode.
+- There is a checkpoint plan before deep implementation.
+- Resume information exists before stopping.
+- Every delegated result has a rejoin decision owned by the primary agent.
 
 ## Output
 
-Return:
-
 ```text
-## Budgetmodus
+## Budget mode
 ...
 
-## Routingentscheidung
-- Agent -> Aufgabe -> Warum dieses Modell
-
-## Checkpoint-Plan
+## Routing plan
 - ...
 
-## Stop-/Resume-Bedingung
+## Checkpoints
+- ...
+
+## Stop / resume condition
 - ...
 ```

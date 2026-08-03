@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "integrations": [
+    {
+      "id": "replace-with-integration-id",
+      "kind": "mcp",
+      "owner": "local owner",
+      "data_class": "internal",
+      "mutation": "read-only",
+      "approval_mode": "prompt",
+      "enabled": false,
+      "last_reviewed": "YYYY-MM-DD",
+      "tools": [
+        {
+          "canonical_name": "mcp__server__tool",
+          "zone": "external_read",
+          "approval": "prompt"
+        }
+      ]
+    }
+  ]
+}

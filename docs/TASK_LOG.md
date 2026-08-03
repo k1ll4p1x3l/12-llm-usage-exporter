@@ -601,3 +601,92 @@ completes a separate external audit.
 
 - Resume feature and Homelab integration work only after the external audit is
   complete. Start from the published `v0.5.0-beta.1` baseline on `main`.
+
+## Checkpoint 2026-08-03 Europe/Berlin — Agent Core candidate pilot
+
+### Goal
+
+Migrate only the repository-wide Codex agent configuration from the copied,
+model-pinned orchestration pack to the central Agent Core public profile while
+preserving all application code, project workflows, provider policies, and
+immutable credential boundaries.
+
+### Authorization and scope
+
+- Human approval: `FREIGABE VERKABELUNG WIE EMPFOHLEN` in the central Agent
+  Core task.
+- Writes are limited to linked worktree
+  `codex/agent-core-candidate-pilot` based on current `origin/main` commit
+  `b5f1cfa7c199566bedcb49a8c53b0cfea10f5040`.
+- Commit, push, and one draft pull request are authorized; merge, release,
+  Homelab changes, provider mutation, and credential handling are not.
+
+### Completed so far
+
+- Kept the primary checkout clean and unchanged; it remains 17 commits behind
+  the freshly fetched remote tracking branch.
+- Built and verified the public `2.0.0-dev` artifact from central source commit
+  `1ba762d07ae8443d1984c7957dd326c765126b56`; artifact SHA-256 is
+  `508f57b9985235017e6bc98338fe4134730cd07864224dfd5b28889e4e88c3c3`.
+- Classified and removed only the superseded generic orchestration pack.
+  Project code, GitHub workflows, README/CHANGELOG/VERSIONS, security/provider
+  documentation, conventions, source policy, task history, public scanner,
+  and public references remain consumer-owned.
+- Applied 71 managed public-profile files plus `.agent-core.lock.json`.
+- Central `verify-consumer` passed and an identical second sync returned
+  `noop`.
+- Bootstrapped only the missing copy-once `PROJECT_PROFILE.md` and
+  `docs/REPO_POLICY.md`; the existing task log was not overwritten.
+- An intentional one-line drift in managed `AGENTS.md` was rejected with the
+  expected hash mismatch. Removing the probe restored the exact lock hash;
+  `verify-consumer` and the next sync returned `ok` and `noop` again.
+- Direct hook readback reported the Pilot as a linked worktree and denied a
+  `PreToolUse` call against the primary checkout without `MAIN_WORKTREE_OK`.
+- Confirmed there is no diff in application code, schemas, examples, Go module
+  files, release configuration, or GitHub workflows.
+
+### Checks completed
+
+- Python syntax for all central hooks and the consumer public scanner: pass
+  with bytecode cache redirected to `/private/tmp`.
+- Central JSON/TOML/lock parsing: pass; public profile, schema 1, 71 managed
+  files.
+- `bash -n` for maintained shell scripts: pass.
+- Consumer and central public-safety scans: pass.
+- `git diff --check` for staged and unstaged changes: pass.
+- `actionlint` found only pre-existing `SC2005` in unchanged
+  `.github/workflows/release.yml`; no workflow file differs from `origin/main`.
+
+### Validation unavailable locally
+
+- This Codex runtime has no local `go`, `govulncheck`, `gitleaks`,
+  `goreleaser`, or `syft` binary. No dependency was installed because that was
+  not part of the approval.
+- Consequently `./scripts/check.sh` cannot be represented as locally green.
+  Go test/vet, vulnerability, secret, and cross-platform evidence must come
+  from the existing Hosted-CI checks on the draft pull request.
+
+### Current validation plan
+
+1. Stage only the reviewed central and consumer-local migration paths.
+2. Review the complete staged diff and repeat all locally available checks.
+3. Commit, push, open one draft PR, and read back Hosted CI without merging.
+
+### Open risks
+
+- `2.0.0-dev` is a candidate pin, not an immutable published release; promotion
+  requires the separate central release gate.
+- Codex hook trust and the primary-checkout interactive prompt require an
+  actual Codex session readback beyond static tests.
+- Local full-project tooling is unavailable in this runtime; Hosted CI is a
+  required completion gate rather than optional corroboration.
+- The unchanged release workflow has a pre-existing `actionlint` `SC2005`
+  style finding that is outside this migration scope.
+- The existing environment-specific Homelab validation remains deferred and
+  outside this migration.
+
+### Next safe step
+
+Stage and review only the authorized migration paths. Stop before publication
+if the managed lock drifts, the public scan reports sensitive content, the
+available checks regress, or the diff includes application/runtime behavior.

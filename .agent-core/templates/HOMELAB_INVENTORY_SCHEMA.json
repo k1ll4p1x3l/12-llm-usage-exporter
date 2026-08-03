@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "notes": "Optional local working copy. Replace placeholders with real local values.",
+  "systems": [
+    {
+      "id": "edge-router-1",
+      "type": "host|vm|container|service|dataset",
+      "criticality": "critical|high|medium|low",
+      "role": "Short plain-language purpose",
+      "network_zone": "management|lan|dmz|storage|guest|other",
+      "dependencies": [
+        "dns-1",
+        "idp-1"
+      ],
+      "auth_path": "How operators authenticate or recover access",
+      "backup_source": "Snapshot, database dump, filesystem backup, or none",
+      "restore_priority": 1,
+      "good_state": "What healthy looks like",
+      "runbook_reference": "docs/runbooks/example.md or local equivalent"
+    }
+  ]
+}

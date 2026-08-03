@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Migrated repository agent configuration to the centrally maintained Agent
+  Core public profile, including a pinned lockfile, linked-worktree gate,
+  adaptive subagent routing, guarded hooks, public-safe templates, and local
+  `PROJECT_PROFILE.md`/`docs/REPO_POLICY.md` extensions. Removed the superseded
+  copied orchestration pack and its model-pinned verifier.
 - Documented the post-release closure state:
   - `main` is the only local branch after the first beta publication and the closure PR merge.
   - Unrelated Dependabot branches and pull requests were left untouched.

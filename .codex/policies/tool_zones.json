@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "unregistered_mcp_policy": "deny",
+  "zones": {
+    "read_local": {
+      "minimum_profile": "observe",
+      "approval": "none inside authorized scope"
+    },
+    "write_current_worktree": {
+      "minimum_profile": "repo_write",
+      "approval": "task scope plus worktree gate"
+    },
+    "external_read": {
+      "minimum_profile": "observe",
+      "approval": "user scope or applicable research policy"
+    },
+    "external_write_or_message": {
+      "minimum_profile": "approved_live",
+      "approval": "specific human authorization"
+    },
+    "live_or_privileged": {
+      "minimum_profile": "approved_live",
+      "approval": "specific human authorization and valid action envelope"
+    },
+    "destructive_or_irreversible": {
+      "minimum_profile": "approved_live",
+      "approval": "fresh explicit confirmation after exact target readback"
+    }
+  },
+  "coverage_limits": [
+    "PreToolUse can guard supported local tool calls but is not a complete security boundary.",
+    "Hosted tools may not traverse the same local hook path.",
+    "PostToolUse observes an already completed action and cannot undo side effects.",
+    "Unregistered MCP tools are denied by the local policy guard; other unknown hosted integrations remain disabled or prompt-gated by Codex until inventoried."
+  ]
+}

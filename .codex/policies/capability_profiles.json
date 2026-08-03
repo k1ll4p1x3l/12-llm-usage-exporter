@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "default_profile": "observe",
+  "profiles": {
+    "observe": {
+      "sandbox": "read-only",
+      "repo_mutation": "none",
+      "other_repositories": "read-only",
+      "live_systems": "none",
+      "requires_human_approval": false
+    },
+    "repo_write": {
+      "sandbox": "workspace-write",
+      "repo_mutation": "assigned ownership in current worktree only",
+      "other_repositories": "read-only",
+      "live_systems": "none",
+      "requires_human_approval": false
+    },
+    "approved_live": {
+      "sandbox": "least privilege required by exact action",
+      "repo_mutation": "approved scope only",
+      "other_repositories": "read-only unless separately approved",
+      "live_systems": "exact action-envelope targets only",
+      "requires_human_approval": true
+    }
+  },
+  "invariants": [
+    "Worktree write permission is not operational authority.",
+    "Credentials prove capability, not approval.",
+    "A run contract or action envelope cannot create human approval.",
+    "A role may narrow but never widen the parent authority."
+  ]
+}

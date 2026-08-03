@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "notes": "Optional local working copy. A green backup job is not enough; track restore-tested recovery.",
+  "records": [
+    {
+      "service_id": "service-1",
+      "data_class": "config|application-data|identity|logs|vm-image",
+      "rpo_target": "4h",
+      "rto_target": "2h",
+      "restore_priority": 1,
+      "restore_order_after": [
+        "dns-1",
+        "idp-1"
+      ],
+      "restore_source": "Snapshot name, backup bucket, tape, or repository",
+      "validation_signal": "Independent signal proving the restored service works",
+      "last_successful_restore_test": "YYYY-MM-DD or unknown",
+      "last_test_scope": "full|partial|tabletop|none",
+      "notes": "Local prerequisites, keys, DNS dependencies, or caveats"
+    }
+  ]
+}

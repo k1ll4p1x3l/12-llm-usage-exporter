@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "run_id": "must-match-run-contract",
+  "state": "executing",
+  "objective": "Copy the unchanged objective from the run contract.",
+  "last_verified_result": "State only what current evidence proves.",
+  "next_safe_step": "Smallest authorized action that resumes the run.",
+  "updated_at": "YYYY-MM-DDTHH:MM:SSZ"
+}

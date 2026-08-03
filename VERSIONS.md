@@ -11,6 +11,11 @@ Current release baseline: `0.5.0-beta.1`
   - Gitleaks `v8.30.1`
   - actionlint `v1.7.12`
   - govulncheck `v1.1.4`
+- Agent Core candidate baseline:
+  - profile: `public`
+  - version: `2.0.0-dev`
+  - source commit: `1ba762d07ae8443d1984c7957dd326c765126b56`
+  - authoritative pin and hashes: `.agent-core.lock.json`
 - Direct Go module baselines:
   - `github.com/pelletier/go-toml/v2` `v2.3.1`
   - `github.com/prometheus/client_golang` `v1.23.2`

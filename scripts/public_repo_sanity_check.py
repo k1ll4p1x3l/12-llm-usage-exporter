@@ -13,7 +13,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {'.git', '__pycache__', '.venv', 'venv', 'node_modules'}
+# Agent Core paths are covered by the central public-safety gate and lock/hash
+# verification. This scanner owns only consumer-local public content.
 SKIP_PREFIXES = (
+    '.agent-core/',
+    '.agents/',
+    '.codex/',
     '.codex/state/',
     'cache/',
     'dist/',
@@ -21,9 +26,9 @@ SKIP_PREFIXES = (
     'vendor/',
 )
 SKIP_FILES = {
+    '.agent-core.lock.json',
+    'AGENTS.md',
     'scripts/public_repo_sanity_check.py',
-    'docs/PUBLIC_REPO_SAFETY.md',
-    'templates/project/PUBLIC_REPO_GITIGNORE_SNIPPET.template',
     '.gitignore',
 }
 TEXT_NAMES = {'AGENTS.md', 'README.md', 'TREE.txt'}
