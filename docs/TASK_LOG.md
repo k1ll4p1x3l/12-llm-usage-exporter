@@ -690,3 +690,51 @@ immutable credential boundaries.
 Stage and review only the authorized migration paths. Stop before publication
 if the managed lock drifts, the public scan reports sensitive content, the
 available checks regress, or the diff includes application/runtime behavior.
+
+## Checkpoint 2026-08-11 Europe/Berlin — Go 1.26.5 security baseline
+
+### Goal and authorization
+
+- Human approval: `GO-FIX FREIGEGEBEN` in the central Agent Core task.
+- Remediate only the `GO-2026-5856` finding on draft pull request #21 by
+  raising the existing Go `1.26` toolchain baseline from `1.26.4` to `1.26.5`.
+- Commit and push to the existing pilot branch are authorized. Merge, release,
+  Agent Core synchronization, provider mutation, and Homelab changes remain
+  outside scope.
+
+### Changes
+
+- Updated the CI, security, and release workflow pins to Go `1.26.5`.
+- Updated the local environment check, operations guide, and version baseline
+  to the same patch release.
+- Added the official `GO-2026-5856` and Go release-history references to the
+  source register and recorded the change in the changelog.
+- Application code, module declarations, release contents, credentials, and
+  Agent Core managed files are unchanged.
+
+### Local checks
+
+- `git diff --check`: pass.
+- `bash -n scripts/dev-env-check.sh`: pass.
+- Consumer and central public-safety scans: pass.
+- Central `verify-consumer --expected-profile public`: pass with all 71 managed
+  files intact.
+- Active Go baseline search: all workflow, local-check, version, and operations
+  references resolve to `1.26.5`; older release-history entries remain
+  intentionally unchanged.
+
+### Validation boundary and rollback
+
+- This runner does not provide the pinned Go, `govulncheck`, `actionlint`,
+  `gitleaks`, GoReleaser, or Syft binaries. The unchanged Hosted-CI workflows on
+  pull request #21 remain the authority for the full build, test, vet, secret,
+  vulnerability, workflow, and release validation.
+- Abort if Hosted CI reports a new failure or still reports `GO-2026-5856`.
+- Rollback is the revert of this single baseline update on the pilot branch;
+  no live system or published release is changed by this checkpoint.
+
+### Next safe step
+
+Commit and push this bounded update to the existing draft pull request, then
+wait for all Hosted-CI checks. Do not merge, release, or activate Agent Core
+synchronization without a separate human gate.
