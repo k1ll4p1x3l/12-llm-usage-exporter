@@ -1,5 +1,10 @@
 {
   "managed_files": {
+    ".agent-core/LICENSE": {
+      "mode": "0644",
+      "sha256": "6194a0d7d0e33a0429d1a062a846d1edb2624bef2a171ce78af8ed41c13c6a5a",
+      "size": 1069
+    },
     ".agent-core/templates/ACTION_ENVELOPE.json": {
       "mode": "0644",
       "sha256": "ec54c0db3853ffb05a4ceb7446e3ac95750085ce3a55bff5311b7c38f1de51f5",
@@ -358,6 +363,6 @@
   },
   "profile": "public",
   "schema": 1,
-  "source_commit": "1ba762d07ae8443d1984c7957dd326c765126b56",
-  "version": "2.0.0-dev"
+  "source_commit": "e0728512262e83b382bdeb60e8136f37755ad311",
+  "version": "2.0.0-rc.1"
 }
