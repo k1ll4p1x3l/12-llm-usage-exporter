@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "run_id": "must-match-run-contract",
+  "records": [
+    {
+      "class": "tests",
+      "result": "pass",
+      "observed_at": "YYYY-MM-DDTHH:MM:SSZ",
+      "summary": "Command and factual result; a status label alone is insufficient.",
+      "artifacts": [
+        "path/to/repo-local-evidence.txt"
+      ]
+    }
+  ]
+}

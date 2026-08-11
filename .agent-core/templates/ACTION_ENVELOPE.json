@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "run_id": "must-match-run-contract",
+  "human_approval": {
+    "conversation_reference": "Quote or stable reference to the actual user approval; this file is not approval.",
+    "approved_at": "YYYY-MM-DDTHH:MM:SSZ",
+    "expires_at": null
+  },
+  "allowed_actions": [
+    "Exact approved action"
+  ],
+  "targets": [
+    "Exact host, service, repository, or environment"
+  ],
+  "constraints": [
+    "No scope expansion",
+    "No credential or permission changes unless explicitly listed"
+  ],
+  "abort_conditions": [
+    "Preflight differs from approved assumptions",
+    "Validation signal becomes ambiguous or negative"
+  ],
+  "validation_steps": [
+    "Independent readback of the intended result"
+  ],
+  "rollback_reference": "Path or identifier of the reviewed rollback procedure"
+}

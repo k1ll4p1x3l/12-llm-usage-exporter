@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/codex/integration-registry.schema.json",
+  "schema_version": 1,
+  "title": "Codex MCP and plugin integration registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "integrations"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "integrations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id", "kind", "owner", "data_class", "mutation", "approval_mode",
+          "enabled", "last_reviewed", "tools"
+        ],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["mcp", "plugin", "app", "connector"]},
+          "owner": {"type": "string", "minLength": 1},
+          "data_class": {"enum": ["public", "internal", "confidential", "secret-bearing"]},
+          "mutation": {"enum": ["read-only", "write", "destructive", "mixed"]},
+          "approval_mode": {"enum": ["disabled", "prompt", "writes", "per-tool"]},
+          "enabled": {"type": "boolean"},
+          "last_reviewed": {"type": "string", "format": "date"},
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["canonical_name", "zone", "approval"],
+              "properties": {
+                "canonical_name": {"type": "string", "minLength": 1},
+                "zone": {"enum": ["read_local", "write_current_worktree", "external_read", "external_write_or_message", "live_or_privileged", "destructive_or_irreversible"]},
+                "approval": {"enum": ["none", "prompt", "explicit-human"]}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

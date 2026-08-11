@@ -33,6 +33,21 @@ The project is intentionally a data translator, not a credential manager, dashbo
 - No proxy/MITM collection.
 - Unknown provider schema results in explicit error status snapshots.
 
+## Agent configuration
+
+This repository consumes the centrally maintained Agent Core with the public
+profile pinned in `.agent-core.lock.json`. Its managed paths include
+`AGENTS.md`, `.codex/`, `.agents/skills/`, and `.agent-core/templates/`.
+Project-specific purpose, commands, and immutable boundaries remain locally
+owned in `PROJECT_PROFILE.md`, `docs/REPO_POLICY.md`, and the existing project
+documentation.
+
+Do not edit managed files directly. Agent Core updates arrive as reviewable
+sync pull requests and must pass lock/hash verification, this repository's CI,
+and public-safety checks. Optional templates under `.agent-core/templates/`
+become consumer-owned only after they are copied to an ignored local working
+path such as `.agent-state/`.
+
 ## Quick start
 
 Create a starter config in the OS default location:
@@ -120,6 +135,8 @@ Useful docs:
   `scripts/bootstrap-github-settings.sh` from an authenticated maintainer shell.
 - New provider support requires a provider policy under `docs/provider-policy/`.
 - Long-running implementation checkpoints are tracked in `docs/TASK_LOG.md`.
+- Agent-specific project context and approval boundaries are documented in
+  `PROJECT_PROFILE.md` and `docs/REPO_POLICY.md`.
 
 ## Repository policy
 

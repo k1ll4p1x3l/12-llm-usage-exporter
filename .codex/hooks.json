@@ -1,0 +1,172 @@
+{
+  "description": "Protect primary checkouts and anchor explicitly contracted long-running work.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/worktree_guard.py\" SessionStart",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/worktree_guard.py') SessionStart\"",
+            "timeout": 10,
+            "statusMessage": "Checking Git worktree safety",
+            "additionalContextLimit": 1200
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/run_guard.py\" SessionStart",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/run_guard.py') SessionStart\"",
+            "timeout": 10,
+            "statusMessage": "Restoring contracted run context",
+            "additionalContextLimit": 1800
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/worktree_guard.py\" UserPromptSubmit",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/worktree_guard.py') UserPromptSubmit\"",
+            "timeout": 10,
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/worktree_guard.py\" PreToolUse",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/worktree_guard.py') PreToolUse\"",
+            "timeout": 10,
+            "statusMessage": "Enforcing Git worktree gate"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/policy_guard.py\" PreToolUse",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/policy_guard.py') PreToolUse\"",
+            "timeout": 10,
+            "statusMessage": "Checking contracted tool boundary"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/policy_guard.py\" PermissionRequest",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/policy_guard.py') PermissionRequest\"",
+            "timeout": 10,
+            "statusMessage": "Explaining approval boundary"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/policy_guard.py\" PostToolUse",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/policy_guard.py') PostToolUse\"",
+            "timeout": 10,
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/policy_guard.py\" SubagentStart",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/policy_guard.py') SubagentStart\"",
+            "timeout": 10,
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/policy_guard.py\" SubagentStop",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/policy_guard.py') SubagentStop\"",
+            "timeout": 10,
+            "additionalContextLimit": 1200
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/run_guard.py\" PreCompact",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/run_guard.py') PreCompact\"",
+            "timeout": 10,
+            "statusMessage": "Checking durable run checkpoint"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/run_guard.py\" PostCompact",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/run_guard.py') PostCompact\"",
+            "timeout": 10,
+            "additionalContextLimit": 1800
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/run_guard.py\" Stop",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/run_guard.py') Stop\"",
+            "timeout": 10,
+            "statusMessage": "Checking contracted completion evidence"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "other",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/worktree_guard.py\" SessionEnd",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/worktree_guard.py') SessionEnd\"",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}

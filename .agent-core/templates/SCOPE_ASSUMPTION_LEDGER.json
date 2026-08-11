@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "objective": "Keep this identical to the active run objective.",
+  "in_scope": ["Exact repository, path, system, or deliverable"],
+  "out_of_scope": ["Explicit non-goal"],
+  "assumptions": [
+    {
+      "statement": "Assumption to validate",
+      "evidence": "Source or readback",
+      "status": "unverified|verified|invalidated",
+      "expires_when": "Condition requiring revalidation"
+    }
+  ],
+  "scope_changes": [
+    {
+      "change": "None",
+      "human_approval_reference": "Required before expansion"
+    }
+  ]
+}

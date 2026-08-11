@@ -1,15 +1,165 @@
-# Project-scoped Codex configuration for this orchestration pack.
-# Start important sessions explicitly, for example:
-#   codex -m gpt-5.5
-# Do not set a forced model here unless this repository should always use one.
-# model = "gpt-5.5"
+# Project-scoped Codex configuration for the central orchestration pack.
+# Models and reasoning effort are deliberately unpinned so current Codex
+# runtime defaults can advance without changing this repository.
+
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+approvals_reviewer = "user"
+
+[sandbox_workspace_write]
+network_access = false
+
+[apps._default]
+approvals_reviewer = "user"
+default_tools_approval_mode = "writes"
+destructive_enabled = false
+open_world_enabled = false
+
+[features]
+hooks = true
+multi_agent = true
 
 [agents]
-# Keep fan-out useful but not absurd. Increase manually only for trusted, low-risk work.
-max_threads = 4
+enabled = true
+interrupt_message = true
+max_concurrent_threads_per_session = 4
 
-# Root session is depth 0. Depth 1 allows direct subagents but prevents subagents from spawning subagents.
-max_depth = 1
+[agents.requirements_analyst]
+description = "Klaert Ziel, Scope, Annahmen, Akzeptanzkriterien und gebuendelte Rueckfragen."
+config_file = "agents/requirements_analyst.toml"
+nickname_candidates = ["Videl"]
 
-# Default maximum runtime for batch-style agent jobs, in seconds.
-job_max_runtime_seconds = 1800
+[agents.project_planner]
+description = "Plant Meilensteine, Abhaengigkeiten, Reviewpunkte und risikoarme Reihenfolge."
+config_file = "agents/project_planner.toml"
+nickname_candidates = ["Shenron"]
+
+[agents.code_mapper]
+description = "Erkundet Codebase, Einstiegspunkte, Tests, Abhaengigkeiten und Risiken read-only."
+config_file = "agents/code_mapper.toml"
+nickname_candidates = ["Trunks"]
+
+[agents.code_test_triage]
+description = "Analysiert Testfehler, Logs und Stacktraces read-only."
+config_file = "agents/code_test_triage.toml"
+nickname_candidates = ["Android 17"]
+
+[agents.code_simple_worker]
+description = "Implementiert kleine, klar begrenzte Code- oder Textaenderungen mit Tests."
+config_file = "agents/code_simple_worker.toml"
+nickname_candidates = ["Goten"]
+
+[agents.code_medium_worker]
+description = "Implementiert normale Features und Bugfixes im zugewiesenen Scope."
+config_file = "agents/code_medium_worker.toml"
+nickname_candidates = ["Gohan"]
+
+[agents.code_heavy_worker]
+description = "Bearbeitet komplexe Logik, Refactorings und Migrationen im zugewiesenen Scope."
+config_file = "agents/code_heavy_worker.toml"
+nickname_candidates = ["Broly"]
+
+[agents.code_review_gate]
+description = "Prueft Diffs read-only auf Korrektheit, Regressionen, Security und Testluecken."
+config_file = "agents/code_review_gate.toml"
+nickname_candidates = ["Piccolo"]
+
+[agents.security_secret_scanner]
+description = "Prueft read-only auf Secrets, riskante Defaults und versehentliche Exposition."
+config_file = "agents/security_secret_scanner.toml"
+nickname_candidates = ["Cell"]
+
+[agents.docs_writer]
+description = "Pflegt README, Changelog, Nutzerdoku und knappe technische Erklaerungen."
+config_file = "agents/docs_writer.toml"
+nickname_candidates = ["Pan"]
+
+[agents.repo_bootstrapper]
+description = "Erstellt eine sichere, generische Arbeitsbasis fuer neue oder unklare Repositories."
+config_file = "agents/repo_bootstrapper.toml"
+nickname_candidates = ["Cabba"]
+
+[agents.research_mapper]
+description = "Plant Suchstrategie, Primaerquellen und Evidenzpfade read-only."
+config_file = "agents/research_mapper.toml"
+nickname_candidates = ["Yamcha"]
+
+[agents.source_reliability_reviewer]
+description = "Bewertet Quellen read-only nach Autoritaet, Aktualitaet und Widerspruechen."
+config_file = "agents/source_reliability_reviewer.toml"
+nickname_candidates = ["Frieza"]
+
+[agents.decision_analyst]
+description = "Vergleicht Optionen, Kriterien, Trade-offs und Risiken read-only."
+config_file = "agents/decision_analyst.toml"
+nickname_candidates = ["Whis"]
+
+[agents.data_quality_auditor]
+description = "Prueft strukturierte Daten read-only auf Qualitaet, Plausibilitaet und Leakage."
+config_file = "agents/data_quality_auditor.toml"
+nickname_candidates = ["Android 18"]
+
+[agents.data_analyst]
+description = "Erstellt reproduzierbare Datenanalysen, Skripte, Tabellen und Visualisierungen."
+config_file = "agents/data_analyst.toml"
+nickname_candidates = ["Buu"]
+
+[agents.automation_planner]
+description = "Plant CI/CD und Automation read-only mit Idempotenz, Guardrails und Rollback."
+config_file = "agents/automation_planner.toml"
+nickname_candidates = ["Bulma"]
+
+[agents.ci_cd_worker]
+description = "Implementiert GitHub Actions, lokale Skripte und CI/CD im zugewiesenen Scope."
+config_file = "agents/ci_cd_worker.toml"
+nickname_candidates = ["Vegeta"]
+
+[agents.long_context_summarizer]
+description = "Pflegt Checkpoints, Task-Logs und Resume-Plaene fuer lange Laeufe."
+config_file = "agents/long_context_summarizer.toml"
+nickname_candidates = ["Roshi"]
+
+[agents.writing_architect]
+description = "Plant Outline, Argumentationsbogen und Konsistenz langer Texte read-only."
+config_file = "agents/writing_architect.toml"
+nickname_candidates = ["Caulifla"]
+
+[agents.writing_editor]
+description = "Bearbeitet Abschnitte und Langtexte im zugewiesenen Scope."
+config_file = "agents/writing_editor.toml"
+nickname_candidates = ["Kale"]
+
+[agents.homelab_inventory]
+description = "Erfasst Hardware, Dienste, Netzwerk, Storage und Backups read-only."
+config_file = "agents/homelab_inventory.toml"
+nickname_candidates = ["Tien"]
+
+[agents.homelab_log_triage]
+description = "Ordnet Homelab-Logs und Servicefehler read-only ein."
+config_file = "agents/homelab_log_triage.toml"
+nickname_candidates = ["Chiaotzu"]
+
+[agents.homelab_light_worker]
+description = "Bearbeitet risikoarme Homelab-Doku, Templates und Hilfsskripte."
+config_file = "agents/homelab_light_worker.toml"
+nickname_candidates = ["Krillin"]
+
+[agents.homelab_service_worker]
+description = "Bearbeitet Compose, Ansible, Monitoring und lokale Automation ohne kritische Live-Aktion."
+config_file = "agents/homelab_service_worker.toml"
+nickname_candidates = ["Goku"]
+
+[agents.homelab_critical_planner]
+description = "Plant kritische Firewall-, DNS-, IAM-, Storage- und Backup-Aenderungen read-only."
+config_file = "agents/homelab_critical_planner.toml"
+nickname_candidates = ["Beerus"]
+
+[agents.homelab_critical_patch_author]
+description = "Bereitet kritische Homelab-Patches im Repo vor, wendet sie aber nicht live an."
+config_file = "agents/homelab_critical_patch_author.toml"
+nickname_candidates = ["Jiren"]
+
+[agents.homelab_security_reviewer]
+description = "Prueft Homelab-Konfigurationen read-only auf Exposition, Secrets und Betriebsrisiken."
+config_file = "agents/homelab_security_reviewer.toml"
+nickname_candidates = ["Android 16"]

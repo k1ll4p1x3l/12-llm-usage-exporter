@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "primary_owner": "main thread",
+  "fanout_limit": 4,
+  "recursive_delegation_allowed": false,
+  "tasks": [
+    {
+      "agent": "DragonBall alias plus technical role",
+      "responsibility": "Bounded independent result",
+      "owned_paths": ["exact/path"],
+      "write_access": false,
+      "status": "planned|running|completed|blocked",
+      "evidence": ["result or artifact reference"],
+      "rejoin_decision": "accept|revise|discard|pending"
+    }
+  ],
+  "retry_count": 0,
+  "last_new_evidence": "Describe what changed before retrying"
+}

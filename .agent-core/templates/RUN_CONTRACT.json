@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "run_id": "replace-with-stable-run-id",
+  "objective": "Describe the approved end result in one testable sentence.",
+  "state": "intake",
+  "scope": {
+    "allowed_paths": [
+      "."
+    ],
+    "forbidden_targets": [
+      "other repositories",
+      "live systems without separate approval"
+    ]
+  },
+  "done_criteria": [
+    "Requested repository result exists",
+    "Relevant tests pass",
+    "Remaining risks are documented"
+  ],
+  "enforcement": {
+    "checkpoint_before_compact": true,
+    "completion_gate": true,
+    "action_envelope_required": false,
+    "required_evidence_classes": [
+      "tests",
+      "scope-readback"
+    ]
+  }
+}

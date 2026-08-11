@@ -1,0 +1,363 @@
+{
+  "managed_files": {
+    ".agent-core/templates/ACTION_ENVELOPE.json": {
+      "mode": "0644",
+      "sha256": "ec54c0db3853ffb05a4ceb7446e3ac95750085ce3a55bff5311b7c38f1de51f5",
+      "size": 814
+    },
+    ".agent-core/templates/CHECKPOINT.json": {
+      "mode": "0644",
+      "sha256": "43b2b396d096345975c406c74f14ab2a699e6d1bfe10e180155c8480070af8e0",
+      "size": 341
+    },
+    ".agent-core/templates/DELEGATION_LEDGER.json": {
+      "mode": "0644",
+      "sha256": "448511283bb167a8978cbc6fd540a7de717f1bc78440e5e7ac6d66358bb2aef9",
+      "size": 573
+    },
+    ".agent-core/templates/EVIDENCE.json": {
+      "mode": "0644",
+      "sha256": "90ad8cb899fa7e130c2419c1697bcb4724076ff8f33d4b7238336ac66ef03fc1",
+      "size": 347
+    },
+    ".agent-core/templates/HOMELAB_APPROVAL_CHANGE_TEMPLATE.md": {
+      "mode": "0644",
+      "sha256": "797127e929635e519e6fda1e8342d8edf60f1b273871ec6fe04f864de909c1bf",
+      "size": 861
+    },
+    ".agent-core/templates/HOMELAB_INCIDENT_RUNBOOK.md": {
+      "mode": "0644",
+      "sha256": "78d56724cf7cb13b6fc82755f2b108203b51894e19d8cdbe66a6ead41659b238",
+      "size": 1429
+    },
+    ".agent-core/templates/HOMELAB_INVENTORY_SCHEMA.json": {
+      "mode": "0644",
+      "sha256": "80f5b1d7c7c3fad26c0d7e72bbdc8476146bdd69349a3fb3c72b7b0420198278",
+      "size": 746
+    },
+    ".agent-core/templates/HOMELAB_OBSERVABILITY_CATALOG.json": {
+      "mode": "0644",
+      "sha256": "0f1ecc34c4bc829ff1ec6f554e72a7aa714a89d2dc5be30cb8b1aa2854395668",
+      "size": 723
+    },
+    ".agent-core/templates/HOMELAB_RECOVERY_MATRIX.json": {
+      "mode": "0644",
+      "sha256": "66226df59df0eea22a4da472db1a0a41b14814f89132d06ee877356cf1f1f071",
+      "size": 775
+    },
+    ".agent-core/templates/PROJECT_PROFILE.md": {
+      "mode": "0644",
+      "sha256": "a54087e27da3aca0ab697cee9b00145ba3a30d7d61b63686f69ec72c441264fd",
+      "size": 1016
+    },
+    ".agent-core/templates/REPO_POLICY.md": {
+      "mode": "0644",
+      "sha256": "d1982bc52827525c54ff2f7896ad64efd895185a3c0e302a21cb39cf0034979b",
+      "size": 1343
+    },
+    ".agent-core/templates/RUN_CONTRACT.json": {
+      "mode": "0644",
+      "sha256": "7e9fcf29c5d96a2f20fdba55dfa4bad460002a8765ea8319e633937f08d148af",
+      "size": 674
+    },
+    ".agent-core/templates/SCOPE_ASSUMPTION_LEDGER.json": {
+      "mode": "0644",
+      "sha256": "00fd7a47c725b0ef36aefe8069137b7ee70db42a857be05e05337606e1ce3fe5",
+      "size": 553
+    },
+    ".agent-core/templates/TASK_LOG.md": {
+      "mode": "0644",
+      "sha256": "a196619d2f1257b38ec03b809e0c9f45afc3d5642676ff2834975d5ddf5ca98d",
+      "size": 1185
+    },
+    ".agent-core/templates/TOOL_INTEGRATION_INVENTORY.json": {
+      "mode": "0644",
+      "sha256": "bc1b6220edcf1ce5ebb95b1d65774b281b7b6a35b55ca58b74541cf531c2c5eb",
+      "size": 474
+    },
+    ".agents/skills/approved-change-execution/SKILL.md": {
+      "mode": "0644",
+      "sha256": "028c0bddf30ddb3d652e42aee5fa1d0f4bbe080f7d6d3f4da5b50556b5dd8fa1",
+      "size": 2500
+    },
+    ".agents/skills/automation-hardening/SKILL.md": {
+      "mode": "0644",
+      "sha256": "9def8ccbaaf48f034854caa5d31128f1850677cc958a91d80f037854612d7ead",
+      "size": 1563
+    },
+    ".agents/skills/autonomous-run/SKILL.md": {
+      "mode": "0644",
+      "sha256": "f289c70b0d948fff0b464e8baa4a893fdd36c56bf29ed603e1eb9186ee695540",
+      "size": 3862
+    },
+    ".agents/skills/backup-restore-validation/SKILL.md": {
+      "mode": "0644",
+      "sha256": "0786ea81fa303304b57cdadbb5b6f275011b7a3069dd5b03d712cac9b32711ef",
+      "size": 1887
+    },
+    ".agents/skills/budget-aware-orchestration/SKILL.md": {
+      "mode": "0644",
+      "sha256": "00ce02f4d9679a276cc0c43f80efdfa59671797632b5d1058fed4812aa3b815d",
+      "size": 2244
+    },
+    ".agents/skills/code-change/SKILL.md": {
+      "mode": "0644",
+      "sha256": "d2fc57c30289502e543d5294196e73ffe5d908e5919a1ba24c224b447948210f",
+      "size": 1542
+    },
+    ".agents/skills/data-analysis-project/SKILL.md": {
+      "mode": "0644",
+      "sha256": "e227dbefa28e3d512e0a6fd70b1ada0b075919680610c564f6b3981a68455b9d",
+      "size": 1400
+    },
+    ".agents/skills/decision-record/SKILL.md": {
+      "mode": "0644",
+      "sha256": "cacff37a9e1c82709de3f74bb0acc1cabb17cda307000e485794978b2c984b0c",
+      "size": 1392
+    },
+    ".agents/skills/homelab-change-control/SKILL.md": {
+      "mode": "0644",
+      "sha256": "12e269c4d97036310b06cdb9b74c68357d2f07bd567a8411eb743ef8c75b9d8d",
+      "size": 2457
+    },
+    ".agents/skills/incident-response/SKILL.md": {
+      "mode": "0644",
+      "sha256": "99aa7f1946a336b2237ab36e32140aa064aacd4b3e28804816c0fb5d438df4ed",
+      "size": 2105
+    },
+    ".agents/skills/long-running-goal/SKILL.md": {
+      "mode": "0644",
+      "sha256": "0ee057f15660e5c78485d2189c3c6fa1ff723356874c3e32c3558f3298f7063b",
+      "size": 2185
+    },
+    ".agents/skills/observability-and-runbooks/SKILL.md": {
+      "mode": "0644",
+      "sha256": "b41cebc6f9da32ba34c5e4d843afd30e2d69e8ef061b7a8fae7bf199454190b7",
+      "size": 1849
+    },
+    ".agents/skills/repo-bootstrap/SKILL.md": {
+      "mode": "0644",
+      "sha256": "fe078bf6f52f957a13946581def86dde0a8e5b509373c16f4f82eb07d52bbebb",
+      "size": 1802
+    },
+    ".agents/skills/research-dossier/SKILL.md": {
+      "mode": "0644",
+      "sha256": "89d42662f3817f5c1a0bba0f88948798d9eb2e2b00ae4464699b876d357896e7",
+      "size": 1647
+    },
+    ".agents/skills/security-review/SKILL.md": {
+      "mode": "0644",
+      "sha256": "8edc158d229a415defe907f805ef7e6f8e83f787168b22ba3b94bda3e3183906",
+      "size": 2403
+    },
+    ".agents/skills/worktree-safety/SKILL.md": {
+      "mode": "0644",
+      "sha256": "a207854584e723c7340ae6fcaa491cd53b37ba6971e6e34c70339b84aca282f0",
+      "size": 3738
+    },
+    ".agents/skills/writing-project/SKILL.md": {
+      "mode": "0644",
+      "sha256": "eac58d45cfec0b1ca6086b545c1cecf43a51a89c67c8b2a01487c312ad2d20b7",
+      "size": 1493
+    },
+    ".codex/agents/automation_planner.toml": {
+      "mode": "0644",
+      "sha256": "ec7dbba42b9c9eb9bb57aae2bbaed4f4e1479d3c3c88144519fd2f3f7a664810",
+      "size": 512
+    },
+    ".codex/agents/ci_cd_worker.toml": {
+      "mode": "0644",
+      "sha256": "33538df7126519f74e2e56867af5eaeaf3ba31e673570b2186d7bd98d2ea4656",
+      "size": 742
+    },
+    ".codex/agents/code_heavy_worker.toml": {
+      "mode": "0644",
+      "sha256": "a3b8f8432de0ea0cae7cea1404c219c8145e817039d5e063d0ecf7bf7df87ac8",
+      "size": 706
+    },
+    ".codex/agents/code_mapper.toml": {
+      "mode": "0644",
+      "sha256": "3ad7673da0515fc66ac264176721a0499ee21c7c43b7fae5d270551dd8ddf211",
+      "size": 760
+    },
+    ".codex/agents/code_medium_worker.toml": {
+      "mode": "0644",
+      "sha256": "139874508806a4bc436b5598a3d784ebc75d139c01893b81bf52ff884321b0bc",
+      "size": 625
+    },
+    ".codex/agents/code_review_gate.toml": {
+      "mode": "0644",
+      "sha256": "6604c2875be3432afa2fae7b8ebb78da293d30298a8e447f95bf2ac5fc633fa0",
+      "size": 519
+    },
+    ".codex/agents/code_simple_worker.toml": {
+      "mode": "0644",
+      "sha256": "e6f6dbaa2a97edabf10e57b17165fc8feee2342fcc661e61b3714e3ae86ed49e",
+      "size": 620
+    },
+    ".codex/agents/code_test_triage.toml": {
+      "mode": "0644",
+      "sha256": "7e7204596290c83d3928281c6eb03f0bab8b08afba7099977dcf67d362795084",
+      "size": 474
+    },
+    ".codex/agents/data_analyst.toml": {
+      "mode": "0644",
+      "sha256": "eb22b850a7df9c7ef3c027593433ff34f4fcf672974ed1e056dba9859c1be712",
+      "size": 794
+    },
+    ".codex/agents/data_quality_auditor.toml": {
+      "mode": "0644",
+      "sha256": "716e3d3f06669fdd18df0918aa328c90e158588e9d063cd2ad6d4c7c9b61664f",
+      "size": 523
+    },
+    ".codex/agents/decision_analyst.toml": {
+      "mode": "0644",
+      "sha256": "9e3f3b9f180d506f54787c8661ac7ef9ff72532f7c32aa3ddfb31b6b3c76c3f5",
+      "size": 453
+    },
+    ".codex/agents/docs_writer.toml": {
+      "mode": "0644",
+      "sha256": "c658a78507f5cfda8e48d65d2e36818b73213a30951ee65334da9fbbd8f02afe",
+      "size": 671
+    },
+    ".codex/agents/homelab_critical_patch_author.toml": {
+      "mode": "0644",
+      "sha256": "76d4e3dce33ede86c438c5c541a33e83cc2e0bde3ac9859d1801cd3884a11288",
+      "size": 652
+    },
+    ".codex/agents/homelab_critical_planner.toml": {
+      "mode": "0644",
+      "sha256": "fbf344ab8550a67aa32b14063a8878a85429686c05faa5e8b86a8c44d8043475",
+      "size": 500
+    },
+    ".codex/agents/homelab_inventory.toml": {
+      "mode": "0644",
+      "sha256": "0101c8e707bcb4c56397d08c53ac13672cd4a3611168159c24f90cafdd0c25f4",
+      "size": 489
+    },
+    ".codex/agents/homelab_light_worker.toml": {
+      "mode": "0644",
+      "sha256": "b9372cc8517a872576683d66006ce9fb74b4f4049f3867cabe03a73e9ff03603",
+      "size": 647
+    },
+    ".codex/agents/homelab_log_triage.toml": {
+      "mode": "0644",
+      "sha256": "127989105778adafaa0bda01e2b6bbd359114210e21f6e980b5b8bc29527b523",
+      "size": 449
+    },
+    ".codex/agents/homelab_security_reviewer.toml": {
+      "mode": "0644",
+      "sha256": "3a49843642806ac7eb1fd4f1d6bba0774802218577cfecc086e143046cd2bae9",
+      "size": 491
+    },
+    ".codex/agents/homelab_service_worker.toml": {
+      "mode": "0644",
+      "sha256": "51f0ca0e2e689ad5f96c77ebc1cd2033017387530902cc42bfb00694b028c2d0",
+      "size": 672
+    },
+    ".codex/agents/long_context_summarizer.toml": {
+      "mode": "0644",
+      "sha256": "6cb201b475a87d53d9ed492140880a7f87ae2ad4c42a498ddf462081fe370bde",
+      "size": 697
+    },
+    ".codex/agents/project_planner.toml": {
+      "mode": "0644",
+      "sha256": "836bdd21cbba33ce1548e8d40169925edd0ff6fc28575f50be83fbb95272a1d8",
+      "size": 483
+    },
+    ".codex/agents/repo_bootstrapper.toml": {
+      "mode": "0644",
+      "sha256": "e9d58e6984fd3af33aed8444423985fcd585ebc80b2a21307d826434b1e7eb82",
+      "size": 680
+    },
+    ".codex/agents/requirements_analyst.toml": {
+      "mode": "0644",
+      "sha256": "f480a4ddb11899d24f66618febaa51570c5d2b77b9a444c750ea3e95a98d92a0",
+      "size": 654
+    },
+    ".codex/agents/research_mapper.toml": {
+      "mode": "0644",
+      "sha256": "99ed82c8a94e9a55d5f4c442d2d629dbd02cbd7213958b9d2ff64efc2b18acc7",
+      "size": 459
+    },
+    ".codex/agents/security_secret_scanner.toml": {
+      "mode": "0644",
+      "sha256": "335ff0a3fafd168679041e9cfc83a71fb396eebcc7e7387a9372220d09185b53",
+      "size": 515
+    },
+    ".codex/agents/source_reliability_reviewer.toml": {
+      "mode": "0644",
+      "sha256": "20ba158cd1adbf1209db5f802a583dea0096bcfb1801861a87f5dcd293fdc41f",
+      "size": 506
+    },
+    ".codex/agents/writing_architect.toml": {
+      "mode": "0644",
+      "sha256": "d8a01399dbff9bcc12471cc3c43f05cb9aebcb09b9d851742137e74b21a81f9d",
+      "size": 466
+    },
+    ".codex/agents/writing_editor.toml": {
+      "mode": "0644",
+      "sha256": "f19199ed4370df3e4c73f03a90f238b4a74c5efbb39b57fdcef4d7cf7be92d87",
+      "size": 644
+    },
+    ".codex/config.toml": {
+      "mode": "0644",
+      "sha256": "954824a37d6cecaf04eaa4e12931a027322e98357eec01b0d3a661a731bac2eb",
+      "size": 6209
+    },
+    ".codex/hooks.json": {
+      "mode": "0644",
+      "sha256": "7ac1c928ddc07de09d1115392d4301e6a1685c6c79321a2497ac976b8d971dcf",
+      "size": 6937
+    },
+    ".codex/hooks/policy_guard.py": {
+      "mode": "0644",
+      "sha256": "da077121513ccbdfedc138d26e5f9cdde904249a82dbe83ff92042b92af4e5cf",
+      "size": 10871
+    },
+    ".codex/hooks/run_guard.py": {
+      "mode": "0644",
+      "sha256": "5ee67232e1bc00fc9e2fd97addcce861b3cdfb35ce6d7a74e1b6c48a5e03c213",
+      "size": 15118
+    },
+    ".codex/hooks/worktree_guard.py": {
+      "mode": "0644",
+      "sha256": "2cc1087b91af741c15692cecc23f8ee5f5e0d16df392f2d8c20fd0d5b0fdd8d2",
+      "size": 11163
+    },
+    ".codex/policies/capability_profiles.json": {
+      "mode": "0644",
+      "sha256": "c1f26c8271f4db6d42c924299a2509808cd99bc922542c4185c539d250813ec3",
+      "size": 1089
+    },
+    ".codex/policies/integration_registry.schema.json": {
+      "mode": "0644",
+      "sha256": "84915889261809eadb95b9d76462f53f6ff9dddebf862101b60d0fef96a7248b",
+      "size": 1854
+    },
+    ".codex/policies/orchestration_limits.json": {
+      "mode": "0644",
+      "sha256": "ddfc5632cfcf8389f27cf529e06b6bca12a412fbb713303434d8932129595850",
+      "size": 594
+    },
+    ".codex/policies/tool_zones.json": {
+      "mode": "0644",
+      "sha256": "64cd0bdd370430a0f940d1f9aa82ffe5373226a2cf523b0543813cb96cc8d3a4",
+      "size": 1328
+    },
+    ".codex/policies/trust_boundaries.json": {
+      "mode": "0644",
+      "sha256": "371f8017c74c51af63cc4346bc701d45f24f3a9f6fedaa92608ff40fd448c358",
+      "size": 1103
+    },
+    "AGENTS.md": {
+      "mode": "0644",
+      "sha256": "da895973c3c5c8deb502ba16a17be351e200ba748f287e152773226b00e630f0",
+      "size": 13262
+    }
+  },
+  "profile": "public",
+  "schema": 1,
+  "source_commit": "1ba762d07ae8443d1984c7957dd326c765126b56",
+  "version": "2.0.0-dev"
+}

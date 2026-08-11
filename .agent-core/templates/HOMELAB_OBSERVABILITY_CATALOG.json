@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "notes": "Optional local working copy. Keep only operationally useful signals and minimize personal data.",
+  "signals": [
+    {
+      "system_id": "service-1",
+      "signal": "availability|latency|errors|capacity|freshness|backup-success|security-event",
+      "source": "Prometheus query, log path, backup report, or other source",
+      "retention": "30d",
+      "alert": "Threshold or rule that should page or notify",
+      "owner": "Human team, person, or on-call role",
+      "runbook_reference": "docs/runbooks/service-1.md",
+      "good_state": "What healthy looks like in plain language",
+      "privacy_notes": "Redact personal data, secrets, and unnecessary identifiers"
+    }
+  ]
+}

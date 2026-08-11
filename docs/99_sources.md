@@ -37,10 +37,12 @@
 - govulncheck — https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck (checked 2026-05-31)
 - Go vulnerability GO-2026-5039 — https://pkg.go.dev/vuln/GO-2026-5039 (checked 2026-06-08; used for Go `1.26.4` release gate)
 - Go vulnerability GO-2026-5037 — https://pkg.go.dev/vuln/GO-2026-5037 (checked 2026-06-08; used for Go `1.26.4` release gate)
+- Go vulnerability GO-2026-5856 — https://pkg.go.dev/vuln/GO-2026-5856 (published 2026-07-07; checked 2026-08-11; fixed in Go `1.26.5`)
 
 ## Tooling and Repository Automation
 
 - Go downloads and release baseline — https://go.dev/dl/ (checked 2026-05-31)
+- Go release history — https://go.dev/doc/devel/release (checked 2026-08-11; confirms Go `1.26.5` as the latest 1.26 patch release and its standard-library security fixes)
 - actions/setup-go releases — https://github.com/actions/setup-go/releases/tag/v6.4.0 (checked 2026-05-31)
 - actions/checkout releases — https://github.com/actions/checkout/releases/tag/v6.0.2 (checked 2026-05-31)
 - actions/upload-artifact releases — https://github.com/actions/upload-artifact/releases/tag/v7.0.1 (checked 2026-05-31)

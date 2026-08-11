@@ -21,6 +21,9 @@ cache/
 usage.snapshot.json
 # Codex Agent Orchestration Pack local safety
 .codex/state/
+.agent-core.local.json
+.agent-core-state/
+.agent-state/
 LOCAL_CONTEXT.*
 PRIVATE_CONTEXT.*
 references/local/

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "max_parallel_subagents": 4,
+  "recursive_delegation_default": false,
+  "max_same_action_retries": 2,
+  "max_rejoin_cycles_without_new_evidence": 2,
+  "requirements": [
+    "Every worker has explicit file or responsibility ownership.",
+    "Every worker knows it is not alone and must preserve concurrent changes.",
+    "One primary agent owns scope, risk decisions, integration, and final review.",
+    "A failed retry must change the hypothesis, input, or method; otherwise stop.",
+    "Fan-out rejoins through a factual ledger before additional delegation."
+  ]
+}
