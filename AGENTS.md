@@ -40,7 +40,7 @@ Nach bestandenem Start-Gate:
 Ziel ist ein möglichst langer, eigenständiger Lauf mit wenigen Unterbrechungen.
 
 1. Erfasse zu Beginn Ziel, Nicht-Ziele, Akzeptanzkriterien, relevante Pfade, Schutzobjekte und erwartete Artefakte.
-2. Bündele alle absehbaren Nutzerfragen und Freigaben in einer frühen Anfrage. Dazu gehören insbesondere Netzwerkzugriff, externe Systeme, Live-Änderungen, Datenlöschung, neue Dependencies, Secrets/Logins, Push/PR und irreversible Schritte. Kündige spätere separate Ready-/Merge-Gates früh an, ohne sie vorwegzunehmen.
+2. Bündele alle absehbaren Nutzerfragen und Freigaben in einer frühen Anfrage. Dazu gehören insbesondere Netzwerkzugriff, externe Systeme, Live-Änderungen, Datenlöschung, neue Dependencies, Secrets/Logins, Push/PR und irreversible Schritte. Kündige spätere Git-/PR-Stufen früh an. Wenn der Nutzer möglichst wenige Unterbrechungen wünscht, biete für einen exakt begrenzten Repo-Task eine auslaufende Lifecycle-Approval-Envelope an; sie darf nur die ausdrücklich vorab genannten Stufen umfassen.
 3. Frage nur, wenn eine Antwort nicht aus dem Repo oder sicheren read-only Prüfungen ableitbar ist und eine Annahme Ergebnis oder Risiko wesentlich ändern würde.
 4. Nach geklärtem Autorisierungsrahmen arbeite bis zum verifizierten Ergebnis oder zu einem echten Stop-Grund weiter. Melde kompakte Fortschritte, aber verlange keine unnötigen Zwischenbestätigungen.
 5. Wenn eine sichere Teilmenge ohne Antwort möglich ist, bearbeite sie und sammle verbleibende Blocker für eine einzige spätere Anfrage.
@@ -139,17 +139,55 @@ Nutze passende Skills unter `.agents/skills/` nach deren Triggern. Lies zuerst d
    Human Gate, Push, PR, Aufgabenwechsel, Übergabe, Unterbrechung oder Abschluss
    einen Milestone-Commit. Ohne Repo-Diff ist ein Commit nicht anwendbar; melde
    das ausdrücklich.
-5. Push und PR-Erstellung/-Aktualisierung brauchen eine explizite oder zu Beginn
-   gebündelte Remote-Freigabe. Danach darfst du scope-konforme Milestone-Commits
-   auf exakt diesem Branch ohne wiederholte Nachfrage pushen und liest Remote-
-   SHA sowie CI zurück. Force-Push und direkter Default-Branch-Push sind
-   standardmäßig verboten.
-6. Ready-for-review, Merge und Branch-/Worktree-Cleanup sind eigene Aktionen.
-   Merge bleibt ein separates, ausdrückliches Human Gate mit aktuellem Readback
-   von PR, Zielbranch, Head-SHA, Checks, Reviews und offenen Threads.
-7. Weise bei jedem Meilenstein und Abschluss proaktiv auf den Git-Status hin:
+5. Push und PR-Erstellung/-Aktualisierung brauchen eine aktuelle ausdrückliche
+   Freigabe oder eine gültige, diese Stufen exakt aufführende Lifecycle-
+   Approval-Envelope. Danach darfst du scope-konforme Milestone-Commits auf
+   exakt diesem Branch ohne wiederholte Nachfrage pushen und liest Remote-SHA
+   sowie CI zurück. Force-Push und direkter Default-Branch-Push sind
+   standardmäßig verboten und nie Teil einer solchen Envelope.
+6. Ready-for-review, Merge und Branch-/Worktree-Cleanup bleiben getrennte
+   technische Stufen. Jede braucht unmittelbar vorher ihren eigenen aktuellen
+   Readback. Eine neue Nutzerinteraktion ist nicht erforderlich, wenn genau
+   diese Stufe bereits in einer weiterhin gültigen Lifecycle-Approval-Envelope
+   enthalten ist; andernfalls bleibt sie ein separates, ausdrückliches Human
+   Gate. Merge-Readback umfasst mindestens PR, Zielbranch und dessen gebundenen
+   Ausgangs-SHA, den run-erzeugten Head-SHA, vollständigen Diff, Checks,
+   Reviews, offene Threads, Mergeability und Merge-Methode.
+7. Ein negatives oder widersprüchliches Gate verbraucht keine Restfreigabe:
+   Stoppe, markiere die verbleibende Stufenfolge als ungültig und fordere erst
+   nach Diagnose eine neue begrenzte Freigabe an. Überspringe, waive oder
+   wiederhole kein fehlgeschlagenes Gate, um die Envelope auszunutzen.
+8. Weise bei jedem Meilenstein und Abschluss proaktiv auf den Git-Status hin:
    Worktree/Branch, letzter lokaler Commit, Remote-/PR-/CI-Stand, Merge-Reife,
    empfohlene nächste Git-Aktion und dafür benötigte Autorisierung.
+
+#### Lifecycle-Approval-Envelope
+
+- Sie ist opt-in und wird bei einem aktivierten Laufvertrag aus
+  `.agent-core/templates/GIT_LIFECYCLE_APPROVAL_ENVELOPE.json` als genau
+  `.agent-state/action-envelope.json` materialisiert. Sie ist kein zweiter
+  Autoritätskanal neben der normalen menschlichen Freigabe.
+- Sie bindet eine aktuelle menschliche Freigabe an genau ein Repository, einen
+  absoluten linked Worktree, den exakten Git-Remote, Base-Branch plus
+  Ausgangs-SHA, einen Topic-Branch, eine Pfad-Allowlist, erlaubte Lifecycle-
+  Stufen, PR-Titel/Body-Policy und exakte Label-/Milestone-/Reviewer-Werte,
+  Merge-Methode und Cleanup-Modus.
+  Ihre Gültigkeit ist endlich und beträgt höchstens 168 Stunden.
+- Der bei Freigabe noch unbekannte finale Head darf nur als
+  `run-produced-tip` gebunden werden: ausschließlich Commits dieses Laufs mit
+  in-scope Diff und grüner Validierung. Ein fremder oder unerwarteter Commit
+  beendet die Freigabekette.
+- Vor Push, Ready, Merge und Cleanup sind die im Template festgelegten
+  Readbacks frisch auszuführen. Ablauf, Repo-/Branch-/Base-Drift, Scope-Drift,
+  fehlgeschlagene Checks, Changes-requested, offene Threads, fehlende
+  Mergeability oder mehrdeutige Evidenz invalidieren alle noch offenen Stufen.
+- Secrets/Credentials, Rechte oder Repository-Einstellungen, Releases, Tags,
+  Workflow-Dispatches, destruktive Datenaktionen, Live-/Produktions- oder
+  Homelab-Änderungen und Scope-/Target-Erweiterungen bleiben immer außerhalb
+  dieser Envelope und benötigen ihre eigene konkrete Freigabe.
+- Weder Template noch Zustandsdatei erzeugen Freigabe, umgehen Codex-
+  Permission-Prompts oder ersetzen Remote-Rulesets. Fehlende Hook-Abdeckung
+  ist kein Grund, eine textuelle Grenze als erfüllt anzunehmen.
 
 ## 7) Harte Stop-Regeln
 
