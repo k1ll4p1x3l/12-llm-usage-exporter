@@ -1,6 +1,6 @@
 # AGENTS.md — zentrale Codex-Arbeitsbasis
 
-Stand: 2026-08-01. Sprache: Deutsch, sofern der Nutzer nichts anderes verlangt.
+Stand: 2026-08-12. Sprache: Deutsch, sofern der Nutzer nichts anderes verlangt.
 
 Diese Datei ist die allgemeine, projektunabhängige Arbeitsanweisung für Codex. Sie wird versioniert an Consumer-Repositories verteilt. Repo-spezifische Ziele, Befehle, Schutzobjekte und Risiken bleiben im jeweiligen Consumer-Repository.
 
@@ -9,7 +9,9 @@ Diese Datei ist die allgemeine, projektunabhängige Arbeitsanweisung für Codex.
 Diese Prüfung hat vor jeder anderen lokalen Aktion Vorrang.
 
 1. Nutze den von `.codex/hooks.json` eingespeisten `WORKTREE_GUARD`-Kontext.
-2. Ein verknüpfter Git-Worktree (`git dir != common dir`) ist für den Start freigegeben. Der Branchname ist dabei unerheblich.
+2. Ein verknüpfter Git-Worktree (`git dir != common dir`) besteht dieses
+   Topologie-Gate. Vor Schreibarbeit gilt zusätzlich das Branch-Gate aus
+   Abschnitt 6; ein linked Worktree auf dem Default-Branch ist nur read-only.
 3. Im primären Checkout darfst du noch keine lokalen Tools verwenden. Weise auf das Kollisionsrisiko paralleler Arbeiten hin und frage, ob das ausdrücklich beabsichtigt ist. Verlange als alleinstehende Antwort exakt `MAIN_WORKTREE_OK`. Behalte den ursprünglichen Auftrag und setze ihn erst danach fort.
 4. Bei unbekannter Git-Topologie gilt dieselbe Sperre wie im primären Checkout (fail closed).
 5. Außerhalb eines Git-Repositories greift dieses spezielle Worktree-Gate nicht; alle übrigen Schutzregeln gelten weiter.
@@ -38,7 +40,7 @@ Nach bestandenem Start-Gate:
 Ziel ist ein möglichst langer, eigenständiger Lauf mit wenigen Unterbrechungen.
 
 1. Erfasse zu Beginn Ziel, Nicht-Ziele, Akzeptanzkriterien, relevante Pfade, Schutzobjekte und erwartete Artefakte.
-2. Bündele alle absehbaren Nutzerfragen und Freigaben in einer frühen Anfrage. Dazu gehören insbesondere Netzwerkzugriff, externe Systeme, Live-Änderungen, Datenlöschung, neue Dependencies, Secrets/Logins und irreversible Schritte.
+2. Bündele alle absehbaren Nutzerfragen und Freigaben in einer frühen Anfrage. Dazu gehören insbesondere Netzwerkzugriff, externe Systeme, Live-Änderungen, Datenlöschung, neue Dependencies, Secrets/Logins, Push/PR und irreversible Schritte. Kündige spätere separate Ready-/Merge-Gates früh an, ohne sie vorwegzunehmen.
 3. Frage nur, wenn eine Antwort nicht aus dem Repo oder sicheren read-only Prüfungen ableitbar ist und eine Annahme Ergebnis oder Risiko wesentlich ändern würde.
 4. Nach geklärtem Autorisierungsrahmen arbeite bis zum verifizierten Ergebnis oder zu einem echten Stop-Grund weiter. Melde kompakte Fortschritte, aber verlange keine unnötigen Zwischenbestätigungen.
 5. Wenn eine sichere Teilmenge ohne Antwort möglich ist, bearbeite sie und sammle verbleibende Blocker für eine einzige spätere Anfrage.
@@ -92,6 +94,8 @@ Nutze passende Skills unter `.agents/skills/` nach deren Triggern. Lies zuerst d
 
 - `worktree-safety` und `autonomous-run` für Start-Gate und lange autonome Läufe,
 - `code-change`, `repo-bootstrap` und `long-running-goal` für Repo-Arbeit,
+- `git-change-lifecycle` für jede Schreibaufgabe, Branches, Milestone-Commits,
+  Push, Pull Request, Review, Merge und Cleanup,
 - `budget-aware-orchestration` für Fan-out und Kapazität,
 - `automation-hardening`, `security-review`, `research-dossier`, `data-analysis-project`, `decision-record`, `writing-project` und `homelab-change-control` für Fachworkflows.
 - `approved-change-execution` ausschließlich nach konkreter menschlicher
@@ -114,10 +118,38 @@ Nutze passende Skills unter `.agents/skills/` nach deren Triggern. Lies zuerst d
 - Aktualisiere bei materiellen Änderungen README/CHANGELOG/VERSIONS und relevante Betriebsdokumentation.
 - Führe vor einer Übergabe passende Linter, Tests, Syntax-, Sicherheits- und Artefaktprüfungen aus. Dokumentation oder `status=completed` allein ist kein Nachweis der tatsächlichen Wirkung.
 - Prüfe das Endergebnis unabhängig zurück: Diff, erzeugte Artefakte, Hashes, Paketinhalt, idempotenter Zweitlauf oder tatsächlicher Runtime-Readback — je nach Aufgabe.
-- Commit, Push, Pull Request, Deployment und externe Schreibvorgänge sind eigene Aktionen und benötigen eine entsprechende Autorisierung durch den Nutzer.
 - Die zentralen Defaults sind `workspace-write`, `on-request`, menschlicher
   Approval-Reviewer und kein Shell-Netzwerk. Eine engere Laufzeitumgebung hat
   Vorrang; Erweiterungen benötigen die dafür vorgesehene Freigabe.
+
+### Git-Lifecycle
+
+1. Read-only Arbeit braucht keinen neuen Branch. Jede unabhängige Schreibaufgabe
+   verwendet einen eigenen Topic-Branch in einem linked Worktree; Standard ist
+   `codex/<short-purpose>`. Fortsetzungen derselben Aufgabe und bestehende PRs
+   verwenden ihren bisherigen Branch. Parallele Aufgaben erhalten getrennte
+   Worktrees.
+2. Schreibe nie auf Default-/Protected-Branches oder Detached HEAD. Eine
+   `MAIN_WORKTREE_OK`-Bestätigung hebt dieses Branch-Gate nicht auf.
+3. Eine ausdrückliche Implementierungsfreigabe für das Repo umfasst die lokale
+   Task-Branch-Erstellung und lokale, kohärente Milestone-Commits, sofern der
+   Nutzer nichts davon ausschließt. Stage nur explizite Pfade; erstelle keine
+   leeren, Secret-enthaltenden, sachfremden oder wissentlich defekten Commits.
+4. Erzeuge nach jedem validierten, fachlich abgeschlossenen Meilenstein und vor
+   Human Gate, Push, PR, Aufgabenwechsel, Übergabe, Unterbrechung oder Abschluss
+   einen Milestone-Commit. Ohne Repo-Diff ist ein Commit nicht anwendbar; melde
+   das ausdrücklich.
+5. Push und PR-Erstellung/-Aktualisierung brauchen eine explizite oder zu Beginn
+   gebündelte Remote-Freigabe. Danach darfst du scope-konforme Milestone-Commits
+   auf exakt diesem Branch ohne wiederholte Nachfrage pushen und liest Remote-
+   SHA sowie CI zurück. Force-Push und direkter Default-Branch-Push sind
+   standardmäßig verboten.
+6. Ready-for-review, Merge und Branch-/Worktree-Cleanup sind eigene Aktionen.
+   Merge bleibt ein separates, ausdrückliches Human Gate mit aktuellem Readback
+   von PR, Zielbranch, Head-SHA, Checks, Reviews und offenen Threads.
+7. Weise bei jedem Meilenstein und Abschluss proaktiv auf den Git-Status hin:
+   Worktree/Branch, letzter lokaler Commit, Remote-/PR-/CI-Stand, Merge-Reife,
+   empfohlene nächste Git-Aktion und dafür benötigte Autorisierung.
 
 ## 7) Harte Stop-Regeln
 
@@ -179,6 +211,7 @@ Bei nicht-trivialen Aufgaben enthält die Abschlussmeldung:
 3. ausgeführte Tests/Checks mit Ergebnis,
 4. verbleibende Risiken, externe Aktivierungsschritte und Annahmen,
 5. Rollback bei Daten, Infrastruktur, Automation oder größeren Änderungen,
-6. eine kurze Lernnotiz zum zugrunde liegenden Prinzip.
+6. Git-Status und die nächste sinnvolle Commit-/Push-/PR-/Merge-Aktion samt Gate,
+7. eine kurze Lernnotiz zum zugrunde liegenden Prinzip.
 
 Führe eingesetzte Subagenten mit DragonBall-Anzeigename und Rolle auf. Nenne keine Behauptung als abgeschlossen, wenn nur der Plan oder die Konfiguration existiert, aber der erforderliche reale Readback fehlt.

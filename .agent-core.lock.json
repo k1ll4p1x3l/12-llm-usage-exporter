@@ -57,8 +57,8 @@
     },
     ".agent-core/templates/REPO_POLICY.md": {
       "mode": "0644",
-      "sha256": "d1982bc52827525c54ff2f7896ad64efd895185a3c0e302a21cb39cf0034979b",
-      "size": 1343
+      "sha256": "9a02080e8c65c2ceaf7a5e6e8ba3804e5b0911b68459df7f86fc291c229f9616",
+      "size": 2139
     },
     ".agent-core/templates/RUN_CONTRACT.json": {
       "mode": "0644",
@@ -72,8 +72,8 @@
     },
     ".agent-core/templates/TASK_LOG.md": {
       "mode": "0644",
-      "sha256": "a196619d2f1257b38ec03b809e0c9f45afc3d5642676ff2834975d5ddf5ca98d",
-      "size": 1185
+      "sha256": "14074779df5226438ffa887b04d3974a050b6e5907405e73d1d84ddcde3d75d7",
+      "size": 1410
     },
     ".agent-core/templates/TOOL_INTEGRATION_INVENTORY.json": {
       "mode": "0644",
@@ -119,6 +119,16 @@
       "mode": "0644",
       "sha256": "cacff37a9e1c82709de3f74bb0acc1cabb17cda307000e485794978b2c984b0c",
       "size": 1392
+    },
+    ".agents/skills/git-change-lifecycle/SKILL.md": {
+      "mode": "0644",
+      "sha256": "1393791d4fb37157ca66d04d67a347ffe02fcfe8944670cd60a2400be6ea1a26",
+      "size": 4165
+    },
+    ".agents/skills/git-change-lifecycle/agents/openai.yaml": {
+      "mode": "0644",
+      "sha256": "4920f8dad9b0c452e28c49c1de1ff2799de9214d9c0596d732c4159bec8787ad",
+      "size": 271
     },
     ".agents/skills/homelab-change-control/SKILL.md": {
       "mode": "0644",
@@ -312,8 +322,13 @@
     },
     ".codex/hooks.json": {
       "mode": "0644",
-      "sha256": "7ac1c928ddc07de09d1115392d4301e6a1685c6c79321a2497ac976b8d971dcf",
-      "size": 6937
+      "sha256": "48cd3f48e3d743467f4c3b2c408e01ea88cb89482d855b28b714b97bb5d83a44",
+      "size": 8345
+    },
+    ".codex/hooks/git_guard.py": {
+      "mode": "0644",
+      "sha256": "29a7857729f356026af8a3b5b025d804691386afb6ff56d1343a3d5d3a0a2c4d",
+      "size": 18249
     },
     ".codex/hooks/policy_guard.py": {
       "mode": "0644",
@@ -334,6 +349,11 @@
       "mode": "0644",
       "sha256": "c1f26c8271f4db6d42c924299a2509808cd99bc922542c4185c539d250813ec3",
       "size": 1089
+    },
+    ".codex/policies/git_lifecycle.json": {
+      "mode": "0644",
+      "sha256": "b4d092d3d250dd758603a7cc3d2e55958617779f4178a7906d27dcfd32d9d140",
+      "size": 821
     },
     ".codex/policies/integration_registry.schema.json": {
       "mode": "0644",
@@ -357,12 +377,12 @@
     },
     "AGENTS.md": {
       "mode": "0644",
-      "sha256": "da895973c3c5c8deb502ba16a17be351e200ba748f287e152773226b00e630f0",
-      "size": 13262
+      "sha256": "b8a4bb0811352a1e66d63718dbb399208989832d0edefda117689bb19b1f0ff8",
+      "size": 15381
     }
   },
   "profile": "public",
   "schema": 1,
-  "source_commit": "e0728512262e83b382bdeb60e8136f37755ad311",
-  "version": "2.0.0-rc.1"
+  "source_commit": "6850ee94601b9eaec416ca246d6aeba7317fa2da",
+  "version": "2.0.0-rc.2"
 }
