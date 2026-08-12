@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Change Lifecycle"
+  short_description: "Task branches, commits, PRs, and merge gates"
+  default_prompt: "Use $git-change-lifecycle to isolate this repository change on a task branch and carry it through validated commits and Git handoff."

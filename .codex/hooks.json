@@ -1,5 +1,5 @@
 {
-  "description": "Protect primary checkouts and anchor explicitly contracted long-running work.",
+  "description": "Protect worktrees and task branches, and anchor explicitly contracted long-running work.",
   "hooks": {
     "SessionStart": [
       {
@@ -12,6 +12,14 @@
             "timeout": 10,
             "statusMessage": "Checking Git worktree safety",
             "additionalContextLimit": 1200
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/git_guard.py\" SessionStart",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/git_guard.py') SessionStart\"",
+            "timeout": 10,
+            "statusMessage": "Checking Git task-branch safety",
+            "additionalContextLimit": 1400
           },
           {
             "type": "command",
@@ -47,6 +55,13 @@
             "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/worktree_guard.py') PreToolUse\"",
             "timeout": 10,
             "statusMessage": "Enforcing Git worktree gate"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/git_guard.py\" PreToolUse",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/git_guard.py') PreToolUse\"",
+            "timeout": 10,
+            "statusMessage": "Enforcing Git task-branch gate"
           },
           {
             "type": "command",
@@ -145,6 +160,14 @@
     "Stop": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/git_guard.py\" Stop",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/git_guard.py') Stop\"",
+            "timeout": 10,
+            "statusMessage": "Reporting Git lifecycle state",
+            "additionalContextLimit": 1600
+          },
           {
             "type": "command",
             "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/run_guard.py\" Stop",

@@ -19,6 +19,21 @@ future template updates.
 - Hook stores only a session approval marker outside the repo after that exact line: yes / no
 - If worktree detection fails, fail closed: yes / no
 
+## Git task lifecycle
+
+- Default/protected branches:
+- Standard task-branch prefix: `codex/`
+- One independent write task per topic branch: yes / no
+- Parallel write tasks use separate linked worktrees: yes / no
+- Repo implementation approval includes local task-branch creation: yes / no
+- Repo implementation approval includes coherent milestone commits: yes / no
+- Commit required before human gate, push, PR, task switch, handoff and completion: yes / no
+- Push/PR may be authorized together at intake: yes / no
+- Ready-for-review requires its own approval: yes / no
+- Merge requires a separate explicit approval with fresh PR/SHA/CI readback: yes / no
+- Force-push and direct default-branch push forbidden: yes / no
+- Branch/worktree cleanup requires explicit approval: yes / no
+
 ## Approval gates
 
 - Live production changes require explicit approval: yes / no
@@ -40,7 +55,7 @@ future template updates.
 
 ## Local conventions
 
-- Branching:
+- Branching exceptions:
 - Commit style:
 - Documentation update rule:
 - Preferred task log path:

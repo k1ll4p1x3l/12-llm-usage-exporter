@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_branch_prefix": "codex/",
+  "protected_branch_names": [
+    "main",
+    "master",
+    "trunk"
+  ],
+  "local_write_authorization": {
+    "includes_task_branch_creation": true,
+    "includes_milestone_commits": true
+  },
+  "milestone_commit": {
+    "required_before": [
+      "human-gate",
+      "push",
+      "pull-request",
+      "task-switch",
+      "handoff",
+      "completion"
+    ],
+    "forbid_empty": true,
+    "forbid_known_broken": true,
+    "forbid_unrelated_changes": true
+  },
+  "remote_gates": {
+    "push": "explicit-or-bundled-human",
+    "pull_request": "explicit-or-bundled-human",
+    "ready_for_review": "explicit-human",
+    "merge": "separate-explicit-human",
+    "branch_cleanup": "explicit-human"
+  },
+  "force_push": false,
+  "direct_default_branch_push": false
+}

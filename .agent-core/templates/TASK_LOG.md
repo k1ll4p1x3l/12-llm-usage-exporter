@@ -48,6 +48,19 @@ after each milestone or when stopping mid-run.
 - Observed at:
 - Artifact/readback:
 
+## Git status
+
+- Worktree / branch:
+- Last local commit:
+- Dirty state:
+- Upstream / ahead / behind:
+- Remote state:
+- Pull request:
+- CI / review:
+- Merge readiness:
+- Recommended next Git action:
+- Required authorization:
+
 ## Open risks
 
 - ...
