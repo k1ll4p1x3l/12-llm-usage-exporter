@@ -738,3 +738,75 @@ available checks regress, or the diff includes application/runtime behavior.
 Commit and push this bounded update to the existing draft pull request, then
 wait for all Hosted-CI checks. Do not merge, release, or activate Agent Core
 synchronization without a separate human gate.
+
+## Checkpoint 2026-08-16 Europe/Berlin — Go 1.26.6 complete security baseline
+
+### Goal and authorization
+
+- Raise the complete CI, security, release, and local maintainer Go baseline
+  from `1.26.5` to `1.26.6` to clear the current `vulncheck` blocker.
+- Work is isolated on `codex/go-1.26.6-security-baseline` from live
+  `origin/main` commit `02ea474e9ea1b81c571b7a3e1218dfc07b40449a`.
+- Validation, one milestone commit, push, one draft pull request, exact
+  security metadata, Ready, merge-commit merge, and remote branch deletion
+  are authorized only while every local and hosted gate remains green.
+- Agent Core, release or tag publication, repository settings, secrets, and
+  Homelab changes remain outside scope.
+
+### Changes
+
+- Updated the CI, security, and release workflow Go pins to `1.26.6`.
+- Updated the local environment gate, README, changelog, version baseline,
+  operations guide, and source register to the same patch release.
+- Logged the Go 1.26.6 announcement, release/download records, and all ten Go
+  vulnerability database entries fixed by this security baseline while
+  preserving the historical Go 1.26.5 records.
+- Normalized display-only leading `v` prefixes when comparing the documented
+  GoReleaser and actionlint versions. Version pins, authentication checks, and
+  fail-closed error accounting are unchanged.
+- Captured the complete `govulncheck -version` output before comparison so
+  `grep -q` cannot close the pipe early and turn a successful version match
+  into SIGPIPE exit 141 under `set -o pipefail`.
+
+### Security evidence
+
+- The official macOS ARM64 Go `1.26.5` and `1.26.6` archives matched their
+  published SHA-256 checksums before use.
+- The before scan with Go `1.26.5` and govulncheck `v1.1.4` reproduced three
+  reachable standard-library findings: `GO-2026-5972`, `GO-2026-6089`, and
+  `GO-2026-6090`; each reports Go `1.26.6` as the fix.
+- The after scan with Go `1.26.6` and the same scanner reports no reachable
+  vulnerabilities.
+- Application code, module declarations, provider behavior, credentials, and
+  Agent Core managed files are unchanged.
+
+### Local checks
+
+- Official release digests and checksum files for GoReleaser `v2.16.0`, Syft
+  `v1.44.0`, Gitleaks `v8.30.1`, actionlint `v1.7.12`, and the temporary
+  GitHub CLI were verified before execution.
+- `bash -n scripts/dev-env-check.sh scripts/check.sh`: pass.
+- `scripts/dev-env-check.sh`: three consecutive passes with Go `1.26.6` and
+  the documented maintainer tool versions after the pipeline correction.
+- `scripts/check.sh`: pass, including gofmt, tests, vet, govulncheck,
+  actionlint, Gitleaks, Agent Core metadata, public-safety scanning, and
+  GoReleaser/Syft validation.
+- `go test -race ./...`: pass.
+- Separate final `govulncheck ./...`: pass with zero reachable findings.
+- `git diff --check`: pass.
+
+### Remaining gate and rollback
+
+- Hosted pull-request checks and the final PR/readiness/merge readbacks remain
+  pending. Any failed or ambiguous check, review, thread, mergeability, base,
+  head, or path signal invalidates the remaining lifecycle stages.
+- Rollback is the revert of the single bounded baseline commit. No release,
+  tag, runtime environment, repository setting, or Homelab system is changed.
+
+### Next safe step
+
+Repeat the final local and scope gates over this checkpoint, create the
+milestone commit, push only the exact topic branch, and open one draft pull
+request with label `security`, milestone `0.5-beta`, and reviewer
+`k1ll4p1x3l`. Proceed to Ready, merge commit, and remote branch deletion only
+after fresh all-green readbacks at each stage.

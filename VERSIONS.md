@@ -4,7 +4,7 @@ Current release baseline: `0.5.0-beta.1`
 
 - Initial go implementation is prepared for local build and iteration.
 - No public v1 semantics and no signed production release yet.
-- Development and CI baseline: Go `1.26.5`.
+- Development and CI baseline: Go `1.26.6`.
 - User-local maintainer tools:
   - GoReleaser `v2.16.0`
   - Syft `v1.44.0` for release SBOM generation

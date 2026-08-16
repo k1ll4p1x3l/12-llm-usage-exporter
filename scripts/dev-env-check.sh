@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-REQUIRED_GO_VERSION="${REQUIRED_GO_VERSION:-1.26.5}"
+REQUIRED_GO_VERSION="${REQUIRED_GO_VERSION:-1.26.6}"
 REQUIRED_GORELEASER_VERSION="${REQUIRED_GORELEASER_VERSION:-v2.16.0}"
 REQUIRED_ACTIONLINT_VERSION="${REQUIRED_ACTIONLINT_VERSION:-v1.7.12}"
 REQUIRED_GOVULNCHECK_VERSION="${REQUIRED_GOVULNCHECK_VERSION:-v1.1.4}"
@@ -66,8 +66,10 @@ check_gh() {
 
 check_goreleaser() {
   require_command goreleaser || return
-  if ! goreleaser --version | grep -q "GitVersion:    ${REQUIRED_GORELEASER_VERSION}"; then
-    log "expected GoReleaser $REQUIRED_GORELEASER_VERSION"
+  local version
+  version="$(goreleaser --version | awk '$1 == "GitVersion:" {print $2; exit}')"
+  if [[ "${version#v}" != "${REQUIRED_GORELEASER_VERSION#v}" ]]; then
+    log "expected GoReleaser $REQUIRED_GORELEASER_VERSION, got ${version:-unknown}"
     failures=$((failures + 1))
   fi
 }
@@ -76,7 +78,7 @@ check_actionlint() {
   require_command actionlint || return
   local version
   version="$(actionlint -version | head -n1)"
-  if [[ "$version" != "$REQUIRED_ACTIONLINT_VERSION" ]]; then
+  if [[ "${version#v}" != "${REQUIRED_ACTIONLINT_VERSION#v}" ]]; then
     log "expected actionlint $REQUIRED_ACTIONLINT_VERSION, got $version"
     failures=$((failures + 1))
   fi
@@ -84,7 +86,9 @@ check_actionlint() {
 
 check_govulncheck() {
   require_command govulncheck || return
-  if ! govulncheck -version | grep -q "Scanner: govulncheck@${REQUIRED_GOVULNCHECK_VERSION}"; then
+  local version_output
+  version_output="$(govulncheck -version)"
+  if [[ "$version_output" != *"Scanner: govulncheck@${REQUIRED_GOVULNCHECK_VERSION}"* ]]; then
     log "expected govulncheck $REQUIRED_GOVULNCHECK_VERSION"
     failures=$((failures + 1))
   fi
