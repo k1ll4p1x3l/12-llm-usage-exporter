@@ -855,3 +855,22 @@ after fresh all-green readbacks at each stage.
   worktree and branch remain untouched.
 - No security, operational, release, settings, secret, or Homelab work remains
   in scope after the closure merge and cleanup readback succeed.
+
+### Closure pull-request gate resynchronization
+
+- Documentation-only closure pull request
+  [#27](https://github.com/k1ll4p1x3l/12-llm-usage-exporter/pull/27)
+  initially completed the CodeQL workflow successfully, while the separate
+  GitHub Advanced Security comparison check concluded `NEUTRAL` with one
+  configuration not found.
+- The single human-authorized retry of CodeQL run `31973942008` completed as
+  attempt 2 with analysis job `95232937333` successful. Its pull-request SARIF
+  upload reported zero results, zero warnings, and the same
+  `.github/workflows/codeql.yml:analyze` category as the current `main`
+  analysis.
+- A manual workflow retry did not recompute the already completed comparison
+  check. This factual, non-empty Task Log update therefore advances the pull
+  request head and creates a fresh `pull_request` `synchronize` event.
+- No check is waived. Ready, merge, and cleanup remain fail closed until the
+  new head has a successful CodeQL comparison check and every other applicable
+  gate is successful.
