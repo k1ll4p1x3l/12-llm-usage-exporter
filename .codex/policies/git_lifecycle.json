@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 1,
   "task_branch_prefix": "codex/",
   "protected_branch_names": [
     "main",
@@ -24,52 +24,11 @@
     "forbid_unrelated_changes": true
   },
   "remote_gates": {
-    "push": "explicit-current-or-valid-lifecycle-envelope",
-    "pull_request": "explicit-current-or-valid-lifecycle-envelope",
-    "ready_for_review": "explicit-current-or-valid-lifecycle-envelope",
-    "merge": "separate-stage-explicit-current-or-valid-lifecycle-envelope",
-    "branch_cleanup": "separate-stage-explicit-current-or-valid-lifecycle-envelope"
-  },
-  "lifecycle_approval_envelope": {
-    "active_state_path": ".agent-state/action-envelope.json",
-    "schema_version": 2,
-    "maximum_validity_hours": 168,
-    "requires_finite_expiry": true,
-    "requires_exact_repository": true,
-    "requires_exact_base_sha": true,
-    "requires_exact_topic_branch": true,
-    "head_binding": "run-produced-tip",
-    "requires_path_allowlist": true,
-    "requires_stage_allowlist": true,
-    "fresh_readback_before": [
-      "mark_ready_for_review",
-      "merge_pr",
-      "delete_remote_branch",
-      "remove_linked_worktree",
-      "delete_local_branch"
-    ],
-    "invalidate_on": [
-      "expiry",
-      "repository_or_branch_mismatch",
-      "base_sha_drift",
-      "unexpected_head_commit",
-      "out_of_scope_diff",
-      "required_check_failure",
-      "changes_requested_review",
-      "unresolved_review_thread",
-      "mergeability_failure",
-      "ambiguous_readback"
-    ],
-    "excluded_actions": [
-      "secret_or_credential_change",
-      "permission_or_repository_setting_change",
-      "release_tag_or_workflow_dispatch",
-      "destructive_data_change",
-      "live_or_production_change",
-      "homelab_infrastructure_change",
-      "scope_or_target_expansion",
-      "force_push_or_direct_default_branch_push"
-    ]
+    "push": "explicit-or-bundled-human",
+    "pull_request": "explicit-or-bundled-human",
+    "ready_for_review": "explicit-human",
+    "merge": "separate-explicit-human",
+    "branch_cleanup": "explicit-human"
   },
   "force_push": false,
   "direct_default_branch_push": false

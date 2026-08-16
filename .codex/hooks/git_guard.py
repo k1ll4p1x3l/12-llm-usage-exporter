@@ -32,28 +32,6 @@ DIRECT_WRITE_TOOLS = {
 }
 SHELL_TOOLS = {"Bash", "exec_command", "functions.exec_command", "shell"}
 SHELL_CONTROL = re.compile(r"[;&|<>`$\n\r]")
-LIFECYCLE_INVALIDATIONS = {
-    "expiry",
-    "repository_or_branch_mismatch",
-    "base_sha_drift",
-    "unexpected_head_commit",
-    "out_of_scope_diff",
-    "required_check_failure",
-    "changes_requested_review",
-    "unresolved_review_thread",
-    "mergeability_failure",
-    "ambiguous_readback",
-}
-LIFECYCLE_EXCLUSIONS = {
-    "secret_or_credential_change",
-    "permission_or_repository_setting_change",
-    "release_tag_or_workflow_dispatch",
-    "destructive_data_change",
-    "live_or_production_change",
-    "homelab_infrastructure_change",
-    "scope_or_target_expansion",
-    "force_push_or_direct_default_branch_push",
-}
 
 
 @dataclass(frozen=True)
@@ -106,14 +84,13 @@ def _validate_policy(payload: Any) -> GitPolicy:
         "local_write_authorization",
         "milestone_commit",
         "remote_gates",
-        "lifecycle_approval_envelope",
         "force_push",
         "direct_default_branch_push",
     }
     if set(payload) != required:
         raise ValueError("policy contains unknown or missing top-level fields")
-    if payload.get("schema_version") != 2:
-        raise ValueError("schema_version must be 2")
+    if payload.get("schema_version") != 1:
+        raise ValueError("schema_version must be 1")
 
     prefix = payload.get("task_branch_prefix")
     if not isinstance(prefix, str) or not prefix or not prefix.endswith("/"):
@@ -167,81 +144,6 @@ def _validate_policy(payload: Any) -> GitPolicy:
         or not all(isinstance(value, str) and value for value in remote.values())
     ):
         raise ValueError("remote_gates is invalid")
-    expected_remote_values = {
-        "push": "explicit-current-or-valid-lifecycle-envelope",
-        "pull_request": "explicit-current-or-valid-lifecycle-envelope",
-        "ready_for_review": "explicit-current-or-valid-lifecycle-envelope",
-        "merge": "separate-stage-explicit-current-or-valid-lifecycle-envelope",
-        "branch_cleanup": "separate-stage-explicit-current-or-valid-lifecycle-envelope",
-    }
-    if remote != expected_remote_values:
-        raise ValueError("remote_gates weakens or changes the central lifecycle contract")
-
-    envelope = payload.get("lifecycle_approval_envelope")
-    expected_envelope = {
-        "active_state_path",
-        "schema_version",
-        "maximum_validity_hours",
-        "requires_finite_expiry",
-        "requires_exact_repository",
-        "requires_exact_base_sha",
-        "requires_exact_topic_branch",
-        "head_binding",
-        "requires_path_allowlist",
-        "requires_stage_allowlist",
-        "fresh_readback_before",
-        "invalidate_on",
-        "excluded_actions",
-    }
-    if not isinstance(envelope, dict) or set(envelope) != expected_envelope:
-        raise ValueError("lifecycle_approval_envelope is invalid")
-    if envelope.get("active_state_path") != ".agent-state/action-envelope.json":
-        raise ValueError("lifecycle envelope active_state_path is invalid")
-    if envelope.get("schema_version") != 2:
-        raise ValueError("lifecycle envelope schema_version must be 2")
-    maximum_hours = envelope.get("maximum_validity_hours")
-    if maximum_hours != 168:
-        raise ValueError("lifecycle envelope maximum_validity_hours must be 168")
-    for field in (
-        "requires_finite_expiry",
-        "requires_exact_repository",
-        "requires_exact_base_sha",
-        "requires_exact_topic_branch",
-        "requires_path_allowlist",
-        "requires_stage_allowlist",
-    ):
-        if envelope.get(field) is not True:
-            raise ValueError(f"lifecycle envelope {field} must be true")
-    if envelope.get("head_binding") != "run-produced-tip":
-        raise ValueError("lifecycle envelope head_binding is invalid")
-    readbacks = envelope.get("fresh_readback_before")
-    required_readbacks = {
-        "mark_ready_for_review",
-        "merge_pr",
-        "delete_remote_branch",
-        "remove_linked_worktree",
-        "delete_local_branch",
-    }
-    if (
-        not isinstance(readbacks, list)
-        or len(readbacks) != len(set(readbacks))
-        or set(readbacks) != required_readbacks
-    ):
-        raise ValueError("lifecycle envelope fresh_readback_before is invalid")
-    invalidations = envelope.get("invalidate_on")
-    if (
-        not isinstance(invalidations, list)
-        or len(invalidations) != len(set(invalidations))
-        or set(invalidations) != LIFECYCLE_INVALIDATIONS
-    ):
-        raise ValueError("lifecycle envelope invalidate_on is invalid")
-    exclusions = envelope.get("excluded_actions")
-    if (
-        not isinstance(exclusions, list)
-        or len(exclusions) != len(set(exclusions))
-        or set(exclusions) != LIFECYCLE_EXCLUSIONS
-    ):
-        raise ValueError("lifecycle envelope excluded_actions is invalid")
     for field in ("force_push", "direct_default_branch_push"):
         if not isinstance(payload.get(field), bool):
             raise ValueError(f"{field} must be boolean")
@@ -261,19 +163,7 @@ def load_policy(root: Path) -> Tuple[GitPolicy, Optional[str]]:
         metadata = path.lstat()
         if not stat.S_ISREG(metadata.st_mode) or path.is_symlink():
             raise ValueError("policy path must be a physical regular file")
-        def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> Dict[str, Any]:
-            result: Dict[str, Any] = {}
-            for key, value in pairs:
-                if key in result:
-                    raise ValueError(f"duplicate JSON key {key!r}")
-                result[key] = value
-            return result
-
-        payload = json.loads(
-            path.read_text(encoding="utf-8"),
-            object_pairs_hook=reject_duplicate_keys,
-        )
-        return _validate_policy(payload), None
+        return _validate_policy(json.loads(path.read_text(encoding="utf-8"))), None
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         return GitPolicy(), f"{POLICY_PATH}: {exc}"
 

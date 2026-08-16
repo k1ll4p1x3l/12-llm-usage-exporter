@@ -11,12 +11,11 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import stat
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Tuple
 
@@ -35,32 +34,6 @@ STATES = {
     "completed",
     "blocked",
 }
-LIFECYCLE_ENVELOPE_TYPE = "git-lifecycle"
-LIFECYCLE_HEAD_BINDING = "run-produced-tip"
-LIFECYCLE_PR_BINDING = "created-from-topic-branch"
-MAX_LIFECYCLE_ENVELOPE_HOURS = 168
-LIFECYCLE_STAGES = frozenset(
-    {
-        "create_task_branch",
-        "modify_allowed_paths",
-        "validate",
-        "milestone_commit",
-        "push_topic_branch",
-        "create_draft_pr",
-        "update_pr_metadata",
-        "apply_review_fixes",
-        "mark_ready_for_review",
-        "merge_pr",
-        "delete_remote_branch",
-        "remove_linked_worktree",
-        "delete_local_branch",
-    }
-)
-MERGE_METHODS = frozenset({"merge", "squash", "rebase", "queue"})
-CLEANUP_MODES = frozenset({"keep", "delete-remote-branch", "delete-remote-and-local"})
-REPOSITORY_SLUG = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-REMOTE_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
-FULL_GIT_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
 @dataclass(frozen=True)
@@ -103,21 +76,13 @@ def _read_json_regular(path: Path) -> Tuple[Optional[Dict[str, Any]], Optional[s
         metadata = os.fstat(descriptor)
         if not stat.S_ISREG(metadata.st_mode):
             return None, f"{path} is not a regular file"
-        def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> Dict[str, Any]:
-            result: Dict[str, Any] = {}
-            for key, value in pairs:
-                if key in result:
-                    raise ValueError(f"duplicate JSON key {key!r}")
-                result[key] = value
-            return result
-
         with os.fdopen(descriptor, "r", encoding="utf-8") as handle:
             descriptor = None
-            value = json.load(handle, object_pairs_hook=reject_duplicate_keys)
+            value = json.load(handle)
         if not isinstance(value, dict):
             return None, f"{path} must contain a JSON object"
         return value, None
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, json.JSONDecodeError) as exc:
         return None, f"cannot read {path}: {exc}"
     finally:
         if descriptor is not None:
@@ -130,48 +95,6 @@ def _nonempty_string(value: Any) -> bool:
 
 def _string_list(value: Any) -> bool:
     return isinstance(value, list) and all(_nonempty_string(item) for item in value)
-
-
-def _unique_string_list(value: Any, *, nonempty: bool = False) -> bool:
-    return (
-        isinstance(value, list)
-        and (bool(value) or not nonempty)
-        and all(_nonempty_string(item) for item in value)
-        and len(value) == len(set(value))
-    )
-
-
-def _timestamp(
-    value: Any,
-    label: str,
-    errors: list[str],
-    *,
-    nullable: bool,
-) -> Optional[datetime]:
-    if value is None and nullable:
-        return None
-    if not _nonempty_string(value):
-        errors.append(f"{label} must be an ISO-8601 timestamp")
-        return None
-    normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
-    try:
-        parsed = datetime.fromisoformat(normalized)
-        if parsed.tzinfo is None:
-            raise ValueError("timezone required")
-        return parsed.astimezone(timezone.utc)
-    except ValueError:
-        errors.append(f"{label} must be an ISO-8601 timestamp with timezone")
-        return None
-
-
-def _repo_relative_patterns(value: Any, *, nonempty: bool) -> bool:
-    if not _unique_string_list(value, nonempty=nonempty):
-        return False
-    for item in value:
-        path = Path(item)
-        if path.is_absolute() or ".." in path.parts or "\x00" in item:
-            return False
-    return True
 
 
 def _validate_contract(contract: Dict[str, Any]) -> Tuple[str, ...]:
@@ -260,58 +183,35 @@ def _validate_checkpoint(root: Path, contract: Dict[str, Any]) -> Tuple[str, ...
     return tuple(errors)
 
 
-def _validate_human_approval(
-    approval: Any,
-    *,
-    lifecycle: bool,
-) -> Tuple[Optional[datetime], Optional[datetime], list[str]]:
+def _validate_action_envelope(root: Path, contract: Dict[str, Any]) -> Tuple[str, ...]:
+    envelope, error = _read_json_regular(root / STATE_DIRECTORY / ENVELOPE_NAME)
+    if error:
+        return (error,)
+    if envelope is None:
+        return (f"missing {STATE_DIRECTORY}/{ENVELOPE_NAME}",)
     errors = []
-    if not isinstance(approval, dict):
-        errors.append("action envelope human_approval must be an object")
-        return None, None, errors
-    if lifecycle and set(approval) != {"conversation_reference", "approved_at", "expires_at"}:
-        errors.append("lifecycle envelope human_approval contains unknown or missing fields")
-    if not _nonempty_string(approval.get("conversation_reference")):
-        errors.append("action envelope needs human_approval.conversation_reference")
-    approved_at = _timestamp(
-        approval.get("approved_at"),
-        "action envelope human_approval.approved_at",
-        errors,
-        nullable=False,
-    )
-    expires_at = _timestamp(
-        approval.get("expires_at"),
-        "action envelope human_approval.expires_at",
-        errors,
-        nullable=not lifecycle,
-    )
-    now = datetime.now(timezone.utc)
-    if approved_at and approved_at > now + timedelta(minutes=5):
-        errors.append("action envelope approved_at is in the future")
-    if expires_at and expires_at <= now:
-        errors.append("action envelope has expired")
-    if approved_at and expires_at:
-        duration = expires_at - approved_at
-        if duration <= timedelta(0):
-            errors.append("action envelope expires_at must be later than approved_at")
-        if lifecycle and duration > timedelta(hours=MAX_LIFECYCLE_ENVELOPE_HOURS):
-            errors.append(
-                "lifecycle envelope validity exceeds "
-                f"{MAX_LIFECYCLE_ENVELOPE_HOURS} hours"
-            )
-    return approved_at, expires_at, errors
-
-
-def _validate_action_envelope_v1(
-    envelope: Dict[str, Any], contract: Dict[str, Any]
-) -> Tuple[str, ...]:
-    errors: list[str] = []
+    if envelope.get("schema_version") != 1:
+        errors.append("action envelope schema_version must be 1")
     if envelope.get("run_id") != contract.get("run_id"):
         errors.append("action envelope run_id does not match run contract")
-    _, _, approval_errors = _validate_human_approval(
-        envelope.get("human_approval"), lifecycle=False
-    )
-    errors.extend(approval_errors)
+    approval = envelope.get("human_approval")
+    if not isinstance(approval, dict):
+        errors.append("action envelope human_approval must be an object")
+    else:
+        if not _nonempty_string(approval.get("conversation_reference")):
+            errors.append("action envelope needs human_approval.conversation_reference")
+        if not _nonempty_string(approval.get("approved_at")):
+            errors.append("action envelope needs human_approval.approved_at")
+        expires_at = approval.get("expires_at")
+        if expires_at is not None:
+            try:
+                parsed = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+                if parsed.tzinfo is None:
+                    raise ValueError("timezone required")
+                if parsed <= datetime.now(timezone.utc):
+                    errors.append("action envelope has expired")
+            except ValueError:
+                errors.append("action envelope expires_at must be null or an ISO-8601 timestamp")
     for key in ("allowed_actions", "targets", "abort_conditions", "validation_steps"):
         if not _string_list(envelope.get(key)):
             errors.append(f"action envelope {key} must be a non-empty string list")
@@ -320,219 +220,6 @@ def _validate_action_envelope_v1(
     if not _nonempty_string(envelope.get("rollback_reference")):
         errors.append("action envelope rollback_reference must be a non-empty string")
     return tuple(errors)
-
-
-def _validate_action_envelope_v2(
-    root: Path, envelope: Dict[str, Any], contract: Dict[str, Any]
-) -> Tuple[str, ...]:
-    errors: list[str] = []
-    expected_top = {
-        "schema_version",
-        "envelope_type",
-        "run_id",
-        "human_approval",
-        "repository",
-        "scope",
-        "pull_request",
-        "constraints",
-        "abort_conditions",
-        "validation_steps",
-        "rollback_reference",
-    }
-    if set(envelope) != expected_top:
-        errors.append("lifecycle envelope contains unknown or missing top-level fields")
-    if envelope.get("envelope_type") != LIFECYCLE_ENVELOPE_TYPE:
-        errors.append(f"lifecycle envelope envelope_type must be {LIFECYCLE_ENVELOPE_TYPE!r}")
-    if envelope.get("run_id") != contract.get("run_id"):
-        errors.append("action envelope run_id does not match run contract")
-    _, _, approval_errors = _validate_human_approval(
-        envelope.get("human_approval"), lifecycle=True
-    )
-    errors.extend(approval_errors)
-
-    repository = envelope.get("repository")
-    if not isinstance(repository, dict):
-        errors.append("lifecycle envelope repository must be an object")
-    else:
-        expected_repository = {
-            "slug",
-            "worktree_root",
-            "remote",
-            "base_branch",
-            "base_sha",
-            "topic_branch",
-            "head_binding",
-        }
-        if set(repository) != expected_repository:
-            errors.append("lifecycle envelope repository contains unknown or missing fields")
-        if not _nonempty_string(repository.get("slug")) or not REPOSITORY_SLUG.fullmatch(
-            repository.get("slug", "")
-        ):
-            errors.append("lifecycle envelope repository.slug must be owner/repository")
-        worktree_root = repository.get("worktree_root")
-        if not _nonempty_string(worktree_root) or not Path(worktree_root).is_absolute():
-            errors.append("lifecycle envelope repository.worktree_root must be absolute")
-        elif Path(worktree_root).resolve() != root.resolve():
-            errors.append("lifecycle envelope repository.worktree_root does not match this worktree")
-        if not _nonempty_string(repository.get("remote")) or not REMOTE_NAME.fullmatch(
-            repository.get("remote", "")
-        ):
-            errors.append("lifecycle envelope repository.remote must be an exact Git remote name")
-        base_branch = repository.get("base_branch")
-        topic_branch = repository.get("topic_branch")
-        if not _nonempty_string(base_branch):
-            errors.append("lifecycle envelope repository.base_branch must be non-empty")
-        if not _nonempty_string(topic_branch):
-            errors.append("lifecycle envelope repository.topic_branch must be non-empty")
-        elif topic_branch == base_branch or topic_branch in {"main", "master", "trunk"}:
-            errors.append("lifecycle envelope topic_branch must not be protected/base branch")
-        if not _nonempty_string(repository.get("base_sha")) or not FULL_GIT_SHA.fullmatch(
-            repository.get("base_sha", "")
-        ):
-            errors.append("lifecycle envelope repository.base_sha must be a full lowercase Git SHA")
-        if repository.get("head_binding") != LIFECYCLE_HEAD_BINDING:
-            errors.append(
-                "lifecycle envelope repository.head_binding must be "
-                f"{LIFECYCLE_HEAD_BINDING!r}"
-            )
-
-    stages: set[str] = set()
-    scope = envelope.get("scope")
-    if not isinstance(scope, dict):
-        errors.append("lifecycle envelope scope must be an object")
-    else:
-        if set(scope) != {"allowed_paths", "forbidden_paths", "allowed_stages"}:
-            errors.append("lifecycle envelope scope contains unknown or missing fields")
-        if not _repo_relative_patterns(scope.get("allowed_paths"), nonempty=True):
-            errors.append("lifecycle envelope scope.allowed_paths must be unique repo-relative paths")
-        forbidden_paths = scope.get("forbidden_paths")
-        if not _repo_relative_patterns(forbidden_paths, nonempty=True):
-            errors.append("lifecycle envelope scope.forbidden_paths must be unique repo-relative paths")
-        elif not {".git", ".agent-state"}.issubset(set(forbidden_paths)):
-            errors.append("lifecycle envelope forbidden_paths must include .git and .agent-state")
-        allowed_stages = scope.get("allowed_stages")
-        if not _unique_string_list(allowed_stages, nonempty=True):
-            errors.append("lifecycle envelope scope.allowed_stages must be a unique non-empty list")
-        else:
-            stages = set(allowed_stages)
-            unknown = sorted(stages - LIFECYCLE_STAGES)
-            if unknown:
-                errors.append(f"lifecycle envelope has unknown stages: {unknown}")
-
-    pull_request = envelope.get("pull_request")
-    cleanup = None
-    if not isinstance(pull_request, dict):
-        errors.append("lifecycle envelope pull_request must be an object")
-    else:
-        expected_pr = {
-            "identity_binding",
-            "draft_first",
-            "metadata",
-            "required_check_policy",
-            "required_approvals",
-            "require_no_unresolved_threads",
-            "merge_method",
-            "cleanup",
-        }
-        if set(pull_request) != expected_pr:
-            errors.append("lifecycle envelope pull_request contains unknown or missing fields")
-        if pull_request.get("identity_binding") != LIFECYCLE_PR_BINDING:
-            errors.append(
-                "lifecycle envelope pull_request.identity_binding must be "
-                f"{LIFECYCLE_PR_BINDING!r}"
-            )
-        if pull_request.get("draft_first") is not True:
-            errors.append("lifecycle envelope pull_request.draft_first must be true")
-        metadata = pull_request.get("metadata")
-        if not isinstance(metadata, dict):
-            errors.append("lifecycle envelope pull_request.metadata must be an object")
-        else:
-            expected_metadata = {"title", "body_policy", "labels", "milestone", "reviewers"}
-            if set(metadata) != expected_metadata:
-                errors.append("lifecycle envelope PR metadata contains unknown or missing fields")
-            if not _nonempty_string(metadata.get("title")):
-                errors.append("lifecycle envelope PR metadata.title must be non-empty")
-            if metadata.get("body_policy") != "task-scope-evidence-and-risks-only":
-                errors.append(
-                    "lifecycle envelope PR metadata.body_policy must be "
-                    "'task-scope-evidence-and-risks-only'"
-                )
-            for field in ("labels", "reviewers"):
-                if not _unique_string_list(metadata.get(field)):
-                    errors.append(f"lifecycle envelope PR metadata.{field} must be a unique list")
-            milestone = metadata.get("milestone")
-            if milestone is not None and not _nonempty_string(milestone):
-                errors.append("lifecycle envelope PR metadata.milestone must be null or non-empty")
-        if pull_request.get("required_check_policy") != "all-required-and-reported-green":
-            errors.append(
-                "lifecycle envelope required_check_policy must be "
-                "'all-required-and-reported-green'"
-            )
-        approvals = pull_request.get("required_approvals")
-        if isinstance(approvals, bool) or not isinstance(approvals, int) or approvals < 0:
-            errors.append("lifecycle envelope required_approvals must be a non-negative integer")
-        if pull_request.get("require_no_unresolved_threads") is not True:
-            errors.append("lifecycle envelope require_no_unresolved_threads must be true")
-        if pull_request.get("merge_method") not in MERGE_METHODS:
-            errors.append(f"lifecycle envelope merge_method must be one of {sorted(MERGE_METHODS)}")
-        cleanup = pull_request.get("cleanup")
-        if cleanup not in CLEANUP_MODES:
-            errors.append(f"lifecycle envelope cleanup must be one of {sorted(CLEANUP_MODES)}")
-
-    dependencies = {
-        "milestone_commit": {"modify_allowed_paths", "validate"},
-        "push_topic_branch": {"milestone_commit"},
-        "create_draft_pr": {"push_topic_branch"},
-        "update_pr_metadata": {"create_draft_pr"},
-        "apply_review_fixes": {
-            "create_draft_pr",
-            "modify_allowed_paths",
-            "validate",
-            "milestone_commit",
-            "push_topic_branch",
-        },
-        "mark_ready_for_review": {"create_draft_pr", "validate"},
-        "merge_pr": {"mark_ready_for_review"},
-        "delete_remote_branch": {"merge_pr"},
-        "remove_linked_worktree": {"merge_pr"},
-        "delete_local_branch": {"merge_pr", "remove_linked_worktree"},
-    }
-    for stage, required in dependencies.items():
-        missing = sorted(required - stages)
-        if stage in stages and missing:
-            errors.append(f"lifecycle stage {stage} requires stages {missing}")
-    cleanup_stages = {"delete_remote_branch", "remove_linked_worktree", "delete_local_branch"}
-    if cleanup == "keep" and stages & cleanup_stages:
-        errors.append("lifecycle cleanup=keep conflicts with cleanup stages")
-    elif cleanup == "delete-remote-branch":
-        if "delete_remote_branch" not in stages or stages & {
-            "remove_linked_worktree",
-            "delete_local_branch",
-        }:
-            errors.append("lifecycle delete-remote-branch cleanup stages are inconsistent")
-    elif cleanup == "delete-remote-and-local" and not cleanup_stages.issubset(stages):
-        errors.append("lifecycle delete-remote-and-local requires all cleanup stages")
-
-    for key in ("constraints", "abort_conditions", "validation_steps"):
-        if not _unique_string_list(envelope.get(key), nonempty=True):
-            errors.append(f"lifecycle envelope {key} must be a unique non-empty string list")
-    if not _nonempty_string(envelope.get("rollback_reference")):
-        errors.append("action envelope rollback_reference must be a non-empty string")
-    return tuple(errors)
-
-
-def _validate_action_envelope(root: Path, contract: Dict[str, Any]) -> Tuple[str, ...]:
-    envelope, error = _read_json_regular(root / STATE_DIRECTORY / ENVELOPE_NAME)
-    if error:
-        return (error,)
-    if envelope is None:
-        return (f"missing {STATE_DIRECTORY}/{ENVELOPE_NAME}",)
-    schema = envelope.get("schema_version")
-    if schema == 1:
-        return _validate_action_envelope_v1(envelope, contract)
-    if schema == 2:
-        return _validate_action_envelope_v2(root, envelope, contract)
-    return ("action envelope schema_version must be 1 or 2",)
 
 
 def _paths_stay_inside(root: Path, values: Iterable[Any]) -> bool:
@@ -606,24 +293,7 @@ def handle_context_event(event: str, status: ContractStatus) -> Optional[Dict[st
         if envelope_errors:
             message += " ACTION ENVELOPE INVALID: " + "; ".join(envelope_errors)
         else:
-            envelope, _ = _read_json_regular(
-                status.root / STATE_DIRECTORY / ENVELOPE_NAME
-            )
-            if envelope and envelope.get("schema_version") == 2:
-                repository = envelope["repository"]
-                stages = envelope["scope"]["allowed_stages"]
-                message += (
-                    " Git lifecycle envelope is structurally valid for "
-                    f"{repository['slug']}:{repository['topic_branch']}; "
-                    f"allowed_stages={stages}. Each stage still requires its fresh "
-                    "preflight/readback and must stop on drift. Independently confirm the "
-                    "current human approval reference."
-                )
-            else:
-                message += (
-                    " Action envelope is structurally valid; independently confirm its "
-                    "approval reference."
-                )
+            message += " Action envelope is structurally valid; independently confirm its approval reference."
     return _context(event, message)
 
 
