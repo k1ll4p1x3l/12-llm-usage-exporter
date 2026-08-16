@@ -3,6 +3,10 @@
 ## Unreleased
 
 - Updated the CI, security, release, and local development Go baseline to
+  `1.26.6`, incorporating all ten security fixes from the Go 1.26.6 release
+  and remediating the reachable `GO-2026-5972`, `GO-2026-6089`, and
+  `GO-2026-6090` findings reported by `govulncheck` under Go 1.26.5.
+- Updated the CI, security, release, and local development Go baseline to
   `1.26.5`, closing the standard-library `GO-2026-5856` finding reported by
   the pilot pull request's `govulncheck` job.
 - Migrated repository agent configuration to the centrally maintained Agent
