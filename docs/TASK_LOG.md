@@ -810,3 +810,67 @@ milestone commit, push only the exact topic branch, and open one draft pull
 request with label `security`, milestone `0.5-beta`, and reviewer
 `k1ll4p1x3l`. Proceed to Ready, merge commit, and remote branch deletion only
 after fresh all-green readbacks at each stage.
+
+## Closure 2026-08-16 Europe/Berlin — Go 1.26.6 security baseline complete
+
+### Terminal repository result
+
+- Pull request [#26](https://github.com/k1ll4p1x3l/12-llm-usage-exporter/pull/26)
+  was marked Ready and merged normally into `main` as merge commit
+  `6144bde7b3cce5f1ab3023a7acf3b1471d0e4d2a`.
+- The merge commit has the bound base
+  `02ea474e9ea1b81c571b7a3e1218dfc07b40449a` and the single reviewed topic
+  commit `d61701214a893c6a13ff1f45864256a2c5436b2f` as its two parents.
+- The pull request retained label `security` and milestone `0.5-beta`. The sole
+  maintainer explicitly waived the reviewer request after GitHub did not
+  retain a self-review request for the pull request author.
+- Required pull-request contexts `ci`, `analyze`, `vulncheck`,
+  `check-milestone`, and `ensure-changelog` all completed successfully before
+  merge. Reviews and review threads remained empty.
+- Post-merge runs for Security, CI, CodeQL, all Linux/macOS/Windows test jobs,
+  and Dependabot completed successfully on the merge commit.
+- GitHub removed `codex/go-1.26.6-security-baseline` after merge. Fresh remote
+  readback also confirmed the earlier invalid `security/go-1.26.6` ref absent.
+
+### Final scope and rollback
+
+- The active workflow, local check, version, operations, source, changelog, and
+  maintainer documentation baselines are Go `1.26.6`; historical Go `1.26.5`
+  records remain intentionally preserved.
+- Application code, module declarations, Agent Core managed files, releases,
+  tags, repository settings, secrets, and Homelab systems were not changed.
+- Rollback, if ever required, is a new reviewed pull request reverting merge
+  commit `6144bde7b3cce5f1ab3023a7acf3b1471d0e4d2a` with mainline parent 1.
+
+### Completion and cleanup boundary
+
+- This documentation-only checkpoint resolves the earlier pending-gate text;
+  it does not alter runtime, build, security, or release behavior and therefore
+  uses the repository's `no-changelog-required` pull-request label.
+- After this tracked closure reaches `main`, only local repository hygiene
+  remains: fast-forward the clean primary `main`, remove this task's linked
+  worktree and fully merged local branches, and verify local and remote SHAs.
+- Those local-only cleanup actions do not change tracked content and require no
+  recursive follow-up checkpoint. The unrelated Agent Core candidate pilot
+  worktree and branch remain untouched.
+- No security, operational, release, settings, secret, or Homelab work remains
+  in scope after the closure merge and cleanup readback succeed.
+
+### Closure pull-request gate resynchronization
+
+- Documentation-only closure pull request
+  [#27](https://github.com/k1ll4p1x3l/12-llm-usage-exporter/pull/27)
+  initially completed the CodeQL workflow successfully, while the separate
+  GitHub Advanced Security comparison check concluded `NEUTRAL` with one
+  configuration not found.
+- The single human-authorized retry of CodeQL run `31973942008` completed as
+  attempt 2 with analysis job `95232937333` successful. Its pull-request SARIF
+  upload reported zero results, zero warnings, and the same
+  `.github/workflows/codeql.yml:analyze` category as the current `main`
+  analysis.
+- A manual workflow retry did not recompute the already completed comparison
+  check. This factual, non-empty Task Log update therefore advances the pull
+  request head and creates a fresh `pull_request` `synchronize` event.
+- No check is waived. Ready, merge, and cleanup remain fail closed until the
+  new head has a successful CodeQL comparison check and every other applicable
+  gate is successful.
