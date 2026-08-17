@@ -738,3 +738,139 @@ available checks regress, or the diff includes application/runtime behavior.
 Commit and push this bounded update to the existing draft pull request, then
 wait for all Hosted-CI checks. Do not merge, release, or activate Agent Core
 synchronization without a separate human gate.
+
+## Checkpoint 2026-08-16 Europe/Berlin — Go 1.26.6 complete security baseline
+
+### Goal and authorization
+
+- Raise the complete CI, security, release, and local maintainer Go baseline
+  from `1.26.5` to `1.26.6` to clear the current `vulncheck` blocker.
+- Work is isolated on `codex/go-1.26.6-security-baseline` from live
+  `origin/main` commit `02ea474e9ea1b81c571b7a3e1218dfc07b40449a`.
+- Validation, one milestone commit, push, one draft pull request, exact
+  security metadata, Ready, merge-commit merge, and remote branch deletion
+  are authorized only while every local and hosted gate remains green.
+- Agent Core, release or tag publication, repository settings, secrets, and
+  Homelab changes remain outside scope.
+
+### Changes
+
+- Updated the CI, security, and release workflow Go pins to `1.26.6`.
+- Updated the local environment gate, README, changelog, version baseline,
+  operations guide, and source register to the same patch release.
+- Logged the Go 1.26.6 announcement, release/download records, and all ten Go
+  vulnerability database entries fixed by this security baseline while
+  preserving the historical Go 1.26.5 records.
+- Normalized display-only leading `v` prefixes when comparing the documented
+  GoReleaser and actionlint versions. Version pins, authentication checks, and
+  fail-closed error accounting are unchanged.
+- Captured the complete `govulncheck -version` output before comparison so
+  `grep -q` cannot close the pipe early and turn a successful version match
+  into SIGPIPE exit 141 under `set -o pipefail`.
+
+### Security evidence
+
+- The official macOS ARM64 Go `1.26.5` and `1.26.6` archives matched their
+  published SHA-256 checksums before use.
+- The before scan with Go `1.26.5` and govulncheck `v1.1.4` reproduced three
+  reachable standard-library findings: `GO-2026-5972`, `GO-2026-6089`, and
+  `GO-2026-6090`; each reports Go `1.26.6` as the fix.
+- The after scan with Go `1.26.6` and the same scanner reports no reachable
+  vulnerabilities.
+- Application code, module declarations, provider behavior, credentials, and
+  Agent Core managed files are unchanged.
+
+### Local checks
+
+- Official release digests and checksum files for GoReleaser `v2.16.0`, Syft
+  `v1.44.0`, Gitleaks `v8.30.1`, actionlint `v1.7.12`, and the temporary
+  GitHub CLI were verified before execution.
+- `bash -n scripts/dev-env-check.sh scripts/check.sh`: pass.
+- `scripts/dev-env-check.sh`: three consecutive passes with Go `1.26.6` and
+  the documented maintainer tool versions after the pipeline correction.
+- `scripts/check.sh`: pass, including gofmt, tests, vet, govulncheck,
+  actionlint, Gitleaks, Agent Core metadata, public-safety scanning, and
+  GoReleaser/Syft validation.
+- `go test -race ./...`: pass.
+- Separate final `govulncheck ./...`: pass with zero reachable findings.
+- `git diff --check`: pass.
+
+### Remaining gate and rollback
+
+- Hosted pull-request checks and the final PR/readiness/merge readbacks remain
+  pending. Any failed or ambiguous check, review, thread, mergeability, base,
+  head, or path signal invalidates the remaining lifecycle stages.
+- Rollback is the revert of the single bounded baseline commit. No release,
+  tag, runtime environment, repository setting, or Homelab system is changed.
+
+### Next safe step
+
+Repeat the final local and scope gates over this checkpoint, create the
+milestone commit, push only the exact topic branch, and open one draft pull
+request with label `security`, milestone `0.5-beta`, and reviewer
+`k1ll4p1x3l`. Proceed to Ready, merge commit, and remote branch deletion only
+after fresh all-green readbacks at each stage.
+
+## Closure 2026-08-16 Europe/Berlin — Go 1.26.6 security baseline complete
+
+### Terminal repository result
+
+- Pull request [#26](https://github.com/k1ll4p1x3l/12-llm-usage-exporter/pull/26)
+  was marked Ready and merged normally into `main` as merge commit
+  `6144bde7b3cce5f1ab3023a7acf3b1471d0e4d2a`.
+- The merge commit has the bound base
+  `02ea474e9ea1b81c571b7a3e1218dfc07b40449a` and the single reviewed topic
+  commit `d61701214a893c6a13ff1f45864256a2c5436b2f` as its two parents.
+- The pull request retained label `security` and milestone `0.5-beta`. The sole
+  maintainer explicitly waived the reviewer request after GitHub did not
+  retain a self-review request for the pull request author.
+- Required pull-request contexts `ci`, `analyze`, `vulncheck`,
+  `check-milestone`, and `ensure-changelog` all completed successfully before
+  merge. Reviews and review threads remained empty.
+- Post-merge runs for Security, CI, CodeQL, all Linux/macOS/Windows test jobs,
+  and Dependabot completed successfully on the merge commit.
+- GitHub removed `codex/go-1.26.6-security-baseline` after merge. Fresh remote
+  readback also confirmed the earlier invalid `security/go-1.26.6` ref absent.
+
+### Final scope and rollback
+
+- The active workflow, local check, version, operations, source, changelog, and
+  maintainer documentation baselines are Go `1.26.6`; historical Go `1.26.5`
+  records remain intentionally preserved.
+- Application code, module declarations, Agent Core managed files, releases,
+  tags, repository settings, secrets, and Homelab systems were not changed.
+- Rollback, if ever required, is a new reviewed pull request reverting merge
+  commit `6144bde7b3cce5f1ab3023a7acf3b1471d0e4d2a` with mainline parent 1.
+
+### Completion and cleanup boundary
+
+- This documentation-only checkpoint resolves the earlier pending-gate text;
+  it does not alter runtime, build, security, or release behavior and therefore
+  uses the repository's `no-changelog-required` pull-request label.
+- After this tracked closure reaches `main`, only local repository hygiene
+  remains: fast-forward the clean primary `main`, remove this task's linked
+  worktree and fully merged local branches, and verify local and remote SHAs.
+- Those local-only cleanup actions do not change tracked content and require no
+  recursive follow-up checkpoint. The unrelated Agent Core candidate pilot
+  worktree and branch remain untouched.
+- No security, operational, release, settings, secret, or Homelab work remains
+  in scope after the closure merge and cleanup readback succeed.
+
+### Closure pull-request gate resynchronization
+
+- Documentation-only closure pull request
+  [#27](https://github.com/k1ll4p1x3l/12-llm-usage-exporter/pull/27)
+  initially completed the CodeQL workflow successfully, while the separate
+  GitHub Advanced Security comparison check concluded `NEUTRAL` with one
+  configuration not found.
+- The single human-authorized retry of CodeQL run `31973942008` completed as
+  attempt 2 with analysis job `95232937333` successful. Its pull-request SARIF
+  upload reported zero results, zero warnings, and the same
+  `.github/workflows/codeql.yml:analyze` category as the current `main`
+  analysis.
+- A manual workflow retry did not recompute the already completed comparison
+  check. This factual, non-empty Task Log update therefore advances the pull
+  request head and creates a fresh `pull_request` `synchronize` event.
+- No check is waived. Ready, merge, and cleanup remain fail closed until the
+  new head has a successful CodeQL comparison check and every other applicable
+  gate is successful.
