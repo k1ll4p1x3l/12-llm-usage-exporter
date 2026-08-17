@@ -29,21 +29,10 @@ future template updates.
 - Repo implementation approval includes coherent milestone commits: yes / no
 - Commit required before human gate, push, PR, task switch, handoff and completion: yes / no
 - Push/PR may be authorized together at intake: yes / no
-- Bounded lifecycle approval envelope supported for one repo task/PR: yes / no
-- Maximum local lifecycle-envelope validity (must be <= 168 hours):
-- Ready-for-review is a separate stage requiring fresh readback and either a
-  current explicit approval or exact inclusion in the valid envelope: yes / no
-- Merge is a separate stage requiring fresh PR/base/head/diff/check/review/
-  thread/mergeability readback and either a current explicit approval or exact
-  inclusion in the valid envelope: yes / no
-- Allowed merge method(s) for an envelope:
-- Minimum approval count before merge:
+- Ready-for-review requires its own approval: yes / no
+- Merge requires a separate explicit approval with fresh PR/SHA/CI readback: yes / no
 - Force-push and direct default-branch push forbidden: yes / no
-- Remote-branch cleanup may be included as a post-merge envelope stage: yes / no
-- Local branch/worktree cleanup may be included as exact post-merge stages: yes / no
-- Secrets/credentials, permissions/settings, release/tag/workflow dispatch,
-  destructive data, live/production/Homelab work and scope expansion always
-  require a separate exact approval outside a lifecycle envelope: yes / no
+- Branch/worktree cleanup requires explicit approval: yes / no
 
 ## Approval gates
 

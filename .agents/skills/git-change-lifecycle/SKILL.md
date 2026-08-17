@@ -43,9 +43,9 @@ description: Use for any repository-writing task and for branch creation, milest
 ## Publish and review
 
 - Push and pull-request creation/update are remote actions; obtain their exact
-  human authorization early and bundled where safe. If the user wants one
-  longer autonomous run, prepare the bounded lifecycle envelope below before
-  asking for one approval that names every intended stage.
+  human authorization early and bundled where safe. Announce ready-for-review,
+  merge, and cleanup early, but request each separate gate only with current
+  readback when it becomes actionable.
 - Once an exact task branch and scope are authorized for push/PR updates, push
   later scope-valid milestone commits without repeated prompts and read back
   the remote SHA each time.
@@ -56,60 +56,13 @@ description: Use for any repository-writing task and for branch creation, milest
 
 ## Merge and cleanup
 
-1. Treat merge as a separate technical stage. It needs a current explicit
-   human gate unless that exact stage is already included in a still-valid
-   lifecycle approval envelope.
-2. Immediately before merge, re-read PR identity, target branch and approved
-   base SHA, the run-produced final head SHA, complete diff, checks, reviews,
-   unresolved threads, mergeability, and merge method. Abort on drift.
+1. Treat merge as a separate explicit human gate. Name PR, target branch,
+   final head SHA, checks, reviews, unresolved threads, and merge method.
+2. Re-read the same facts immediately before the approved merge and abort on
+   drift.
 3. Verify the resulting default-branch SHA and checks after merge.
-4. Remote-branch deletion, linked-worktree removal, and local-branch deletion
-   are distinct cleanup stages. Perform only the exact approved subset after a
-   successful merge readback and a clean-state preflight.
-
-## Bounded lifecycle approval envelope
-
-Use this opt-in path only for one repository task and one pull request:
-
-1. Activate or reuse a matching run contract. Copy
-   `.agent-core/templates/GIT_LIFECYCLE_APPROVAL_ENVELOPE.json` to the sole
-   active path `.agent-state/action-envelope.json`; do not invent a parallel
-   approval file.
-2. Before asking for approval, fill the exact repository slug, absolute linked
-   worktree, Git remote, base branch and current full remote base SHA, topic
-   branch, repo-relative path allowlist, allowed stages, PR title/body policy and exact label,
-   milestone and reviewer values, merge method, cleanup mode, abort conditions,
-   and finite expiry. Maximum validity is 168 hours; shorter is preferable.
-3. Ask the human once to approve that exact envelope. Record an exact quote or
-   stable conversation reference and timestamp only after the real approval.
-   The file cannot create or widen authority.
-4. Execute listed stages in order. Each stage keeps its own preflight and
-   readback. Normal Codex permission prompts and repository rules still apply.
-5. Bind the final, initially unknown head only as `run-produced-tip`: every
-   commit must have been produced in this run, remain inside the path allowlist,
-   and have passed the declared validation. Stage only explicit in-scope paths,
-   require that the named remote URL resolves to the approved repo slug, push
-   only the exact topic branch there, and stop on any unexpected commit or
-   remote base drift.
-6. Before ready and again immediately before merge, require exact PR/base/head,
-   complete diff, all required and reported checks green, the declared approval
-   count, no changes-requested review, no unresolved thread, and clean
-   mergeability. Create the PR as Draft with explicit matching `--repo`,
-   `--base`, `--head`, exact title and explicit body input; metadata must stay
-   inside the exact label/milestone/reviewer sets. Use the exact `--repo` on
-   every PR mutation and merge only with the declared method plus
-   `--match-head-commit <run-produced-tip>`. After merge, prove the resulting
-   default-branch SHA before any cleanup.
-7. Expiry; repository, branch, base, head, path, or PR drift; a negative check
-   or review; ambiguous readback; or an out-of-envelope action invalidates all
-   remaining stages. Diagnose first and obtain a new bounded approval rather
-   than editing the old envelope.
-
-The envelope never covers secrets or credentials, permissions or repository
-settings, release/tag/workflow dispatch, destructive data work, live or
-production effects, Homelab infrastructure, force-push, direct default-branch
-push, or any target/scope expansion. Those actions retain their own exact
-human gates.
+4. Recommend remote-branch deletion and worktree cleanup, but perform them only
+   after separate authorization and a clean-state readback.
 
 ## Stop rules
 
@@ -117,8 +70,7 @@ human gates.
   changes, the base moved incompatibly, validation contradicts readiness, or
   the requested remote action exceeds current authorization.
 - A local commit is recoverability, not proof of correctness or operational
-  authority. A push or PR is not merge approval unless a current explicit
-  approval or valid envelope independently includes the merge stage.
+  authority. A push is not merge approval; a PR is not merge approval.
 - Project-local hooks are guardrails and may be absent or untrusted. Preserve
   these rules as the textual fallback and rely on remote rulesets for the
   default-branch boundary.
