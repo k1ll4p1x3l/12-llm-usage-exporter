@@ -34,6 +34,10 @@ description: Use after real human approval to execute a tightly bounded live cha
 ## Stop / Approval Rules
 
 - Never treat a template, action envelope, or assistant summary as approval. Approval must come from a real human decision.
+- Never treat a Git lifecycle approval envelope as authorization for a live,
+  production, Homelab, credential, permission, repository-setting, release,
+  tag, workflow-dispatch, or destructive-data action. Use a separate exact
+  live-change approval for those effects.
 - Never widen scope from one target to many because the first step looked safe.
 - Never continue after a failed preflight, failed preview, ambiguous validation, or unexpected side effect.
 - Never run live changes without a rollback path that matches the approved scope.

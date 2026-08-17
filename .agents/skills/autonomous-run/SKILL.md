@@ -30,16 +30,21 @@ description: Use when a task should gather required inputs and approvals early, 
 4. Ask for them in one bundled request whenever feasible. Do not drip-feed questions.
 5. For a long or interruption-prone run, copy the managed templates to the ignored
    `.agent-state/` directory and activate an opt-in `run-contract.json`.
-6. During `intake` and `planned`, keep `action_envelope_required` false so the
+6. For one bounded repository task, offer a lifecycle approval envelope when
+   the user wants branch, implementation, validation, commits, push, Draft PR,
+   review fixes, Ready, Merge, and selected cleanup to proceed with one early
+   approval. Fill the exact schema-v2 template before asking; never infer an
+   unstated stage.
+7. During `intake` and `planned`, keep `action_envelope_required` false so the
    local contract and envelope can be prepared. Only after the actual human
    approval is present and the envelope is valid, set it true and move to
    `authorized`. This order stages enforcement; it does not weaken it.
-7. After the bundle is resolved, execute independently within scope. Update the
+8. After the bundle is resolved, execute independently within scope. Update the
    contract only to describe state; never use it to invent or widen approval.
-8. Prefer the smallest safe next action that preserves momentum.
-9. Before context compaction, write a matching `checkpoint.json` whose objective
+9. Prefer the smallest safe next action that preserves momentum.
+10. Before context compaction, write a matching `checkpoint.json` whose objective
    is unchanged and whose last result is evidence-backed.
-10. Finish at one of three end states:
+11. Finish at one of three end states:
    - completed result,
    - safe checkpoint with resume prompt,
    - explicit blocker that cannot be resolved without new user input or approval.
@@ -61,6 +66,12 @@ description: Use when a task should gather required inputs and approvals early, 
 - Stop if evidence contradicts the original assumption set and scope must change.
 - Stop if an action envelope is absent, expired, mismatched, or broader than the
   actual human authorization for a live/external/risky action.
+- Stop and invalidate the unfinished lifecycle sequence on base/head/path/PR
+  drift, an unexpected commit, failed check, changes-requested review,
+  unresolved thread, missing mergeability, or ambiguous readback.
+- A repo lifecycle envelope cannot authorize secrets, credentials, permissions,
+  repository settings, release/tag/workflow dispatch, destructive data work,
+  live/production/Homelab changes, or a scope/target expansion.
 - Do not claim completion when validation is missing. A passing status written by
   the agent is metadata, not independent proof of the underlying result.
 
