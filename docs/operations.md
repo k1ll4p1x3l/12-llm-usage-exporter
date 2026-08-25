@@ -17,9 +17,14 @@ Recommended GitHub settings for this repository:
   - enable secret scanning and push protection
   - require private security advisories for vulnerabilities
 - Workflow enforcement:
-  - `.github/workflows/milestone-check.yml` enforces milestone assignment on pull requests.
+  - `.github/workflows/milestone-check.yml` enforces milestone assignment on
+    human pull requests.
   - `.github/workflows/milestone-release-notes.yml` exports closed milestone items and can create/update a draft release.
-  - `.github/workflows/changelog-check.yml` requires changelog updates unless explicitly labeled `no-changelog-required`.
+  - `.github/workflows/changelog-check.yml` requires changelog updates unless
+    explicitly labeled `no-changelog-required`.
+  - Dependabot-authored PRs carrying the repository-owned `dependencies` label
+    bypass the milestone and changelog bookkeeping checks. Code, security and
+    branch-protection checks remain required.
 - Release:
   - publish via tag push (`v*`) and GoReleaser workflow
   - keep release notes auto-generated or curated manually

@@ -2,61 +2,80 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
 env:
+  CI_SKIP_DOCS_ONLY: "true"
   GO_VERSION: "1.26.6"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      run_quality: ${{ steps.scope.outputs.run_quality }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Determine change scope
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          CI_SCOPE_OUTPUT_NAME: run_quality
+        run: bash scripts/ci-change-scope.sh "$BASE_SHA" "$GITHUB_SHA"
+      - name: Public-repository safety
+        run: python3 scripts/public_repo_sanity_check.py
       - name: Setup Go
-        uses: actions/setup-go@v6
+        if: steps.scope.outputs.run_quality == 'true'
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-
       - name: Check formatting
+        if: steps.scope.outputs.run_quality == 'true'
         run: |
           if [ -n "$(find . -name '*.go' -type f -print0 | xargs -0 gofmt -l)" ]; then
             echo "Go files are not formatted"
             exit 1
           fi
-
       - name: Run tests
+        if: steps.scope.outputs.run_quality == 'true'
         run: go test ./...
-
       - name: Run vet
+        if: steps.scope.outputs.run_quality == 'true'
         run: go vet ./...
 
   cross-os-test:
     name: cross-os-test (${{ matrix.os }})
+    needs: ci
+    if: needs.ci.outputs.run_quality == 'true'
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        os: [macos-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-
       - name: Run tests
         run: go test ./...

@@ -2,37 +2,50 @@ name: Changelog Check
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    branches: [main]
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled]
 
 permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   ensure-changelog:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Require changelog touch
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
-            const bypassLabel = (context.payload.pull_request.labels || [])
-              .some((label) => label.name === "no-changelog-required");
+            const pull = context.payload.pull_request;
+            const labels = new Set((pull.labels || []).map((label) => label.name));
+            const explicitBypass = labels.has("no-changelog-required");
+            const managedDependencyUpdate =
+              pull.user?.login === "dependabot[bot]" && labels.has("dependencies");
 
-            if (bypassLabel) {
-              core.info("Changelog check bypassed by label `no-changelog-required`.");
+            if (explicitBypass || managedDependencyUpdate) {
+              core.info(
+                managedDependencyUpdate
+                  ? "Changelog check bypassed for a labeled Dependabot dependency update."
+                  : "Changelog check bypassed by the no-changelog-required label."
+              );
               return;
             }
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
+              pull_number: pull.number,
               per_page: 100,
             });
 
-            const touchesChangelog = files.some((file) => file.filename === "CHANGELOG.md");
-
-            if (!touchesChangelog) {
-              core.setFailed("Please update CHANGELOG.md or add the `no-changelog-required` label.");
+            if (!files.some((file) => file.filename === "CHANGELOG.md")) {
+              core.setFailed(
+                "Please update CHANGELOG.md or add the no-changelog-required label."
+              );
             }
