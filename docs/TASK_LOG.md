@@ -1,5 +1,20 @@
 # Task Log
 
+## CI hardening checkpoint — 2026-08-26
+
+- Linked worktree branch `codex/ci-hardening-20260826`, based on current
+  `origin/main`; no push, PR, workflow dispatch, rerun, or settings mutation.
+- Existing required job names `ci`, `analyze`, `vulncheck`,
+  `check-milestone`, and `ensure-changelog` are preserved while all workflows
+  gain pinned actions, least privilege, timeouts, and bounded concurrency.
+- Expensive Go/security steps skip safely on docs-only changes without making
+  the required jobs disappear. Dependabot bypasses changelog/milestone gates
+  only for the bot plus the repository-owned `dependencies` label.
+- Local evidence: actionlint, Go 1.26.6 formatting/tests/vet, public-repository
+  safety, and govulncheck v1.1.4 passed with zero reachable vulnerabilities.
+- Hosted required-check and ruleset readback remains pending until push is
+  separately authorized.
+
 ## Checkpoint 2026-05-31 Europe/Berlin
 
 ### Goal

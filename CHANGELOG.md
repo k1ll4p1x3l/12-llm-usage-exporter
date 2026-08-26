@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Hardened GitHub Actions with full-SHA action pins, bounded runtimes,
+  PR-only cancellation, fail-open documentation scope detection, and removal
+  of the duplicate Ubuntu cross-OS test.
+- Kept all required check names stable while allowing labeled Dependabot
+  dependency PRs to bypass human milestone/changelog bookkeeping; label and
+  milestone events now refresh those checks.
+- Changed organization bootstrap to dry-run by default.
 - Updated the CI, security, release, and local development Go baseline to
   `1.26.6`, incorporating all ten security fixes from the Go 1.26.6 release
   and remediating the reachable `GO-2026-5972`, `GO-2026-6089`, and

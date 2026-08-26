@@ -4,29 +4,45 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
 env:
+  CI_SKIP_DOCS_ONLY: "true"
   GO_VERSION: "1.26.6"
   GOVULNCHECK_VERSION: "v1.1.4"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   vulncheck:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Determine change scope
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          CI_SCOPE_OUTPUT_NAME: run_quality
+        run: bash scripts/ci-change-scope.sh "$BASE_SHA" "$GITHUB_SHA"
       - name: Setup Go
-        uses: actions/setup-go@v6
+        if: steps.scope.outputs.run_quality == 'true'
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-
       - name: Install govulncheck
+        if: steps.scope.outputs.run_quality == 'true'
         run: go install golang.org/x/vuln/cmd/govulncheck@${{ env.GOVULNCHECK_VERSION }}
-
       - name: Run govulncheck
+        if: steps.scope.outputs.run_quality == 'true'
         run: govulncheck ./...
