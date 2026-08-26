@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed CI scope detection for very large change lists by consuming the full
+  input, preventing `grep -q` and `pipefail` from turning a positive match into
+  `run_heavy=false` after SIGPIPE.
 - Hardened GitHub Actions with full-SHA action pins, bounded runtimes,
   PR-only cancellation, fail-open documentation scope detection, and removal
   of the duplicate Ubuntu cross-OS test.
