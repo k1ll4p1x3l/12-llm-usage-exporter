@@ -70,8 +70,10 @@ if [[ -z "$changed_files" ]]; then
   exit 0
 fi
 
+# Do not use grep -q in these pipelines. With pipefail, an early grep exit can
+# SIGPIPE printf for large diffs and invert a positive match.
 if [[ "$scope_mode" == "paths" ]]; then
-  if printf '%s\n' "$changed_files" | grep -Eq "$path_regex"; then
+  if printf '%s\n' "$changed_files" | grep -E "$path_regex" >/dev/null; then
     emit true "a changed path matches the configured scope"
   else
     emit false "no changed path matches the configured scope"
@@ -79,7 +81,7 @@ if [[ "$scope_mode" == "paths" ]]; then
   exit 0
 fi
 
-if printf '%s\n' "$changed_files" | grep -Eivq '(^|/)[^/]+\.(md|mdx)$|^(LICENSE|NOTICE)(\.[^/]*)?$'; then
+if printf '%s\n' "$changed_files" | grep -Eiv '(^|/)[^/]+\.(md|mdx)$|^(LICENSE|NOTICE)(\.[^/]*)?$' >/dev/null; then
   emit true "non-documentation files changed"
 else
   emit false "only Markdown or root license/notice files changed"
