@@ -60,6 +60,21 @@
       "sha256": "a54087e27da3aca0ab697cee9b00145ba3a30d7d61b63686f69ec72c441264fd",
       "size": 1016
     },
+    ".agent-core/templates/REPOSITORY_AGENT_OVERLAY.md": {
+      "mode": "0644",
+      "sha256": "5990cfce40620eb9fc8f4441b3ffccf65531ee49409449b135725b5ce1ec074a",
+      "size": 944
+    },
+    ".agent-core/templates/REPOSITORY_AGENT_OVERLAY.schema.json": {
+      "mode": "0644",
+      "sha256": "f9b529409be26ae671aa8866f43c0311c7e7a51a9d32d24cc5e6a9a978d231ed",
+      "size": 937
+    },
+    ".agent-core/templates/REPOSITORY_AGENT_OVERLAY_MANIFEST.json": {
+      "mode": "0644",
+      "sha256": "6ff62c39677c7b54735700fbfafbd14587d89a1c0f9380135a0175344ac159e8",
+      "size": 234
+    },
     ".agent-core/templates/REPO_POLICY.md": {
       "mode": "0644",
       "sha256": "5d1f6b28c9d5dab8e58e63b01efc4a869c9ba50559ed2e0775ebd67d988da355",
@@ -327,8 +342,8 @@
     },
     ".codex/hooks.json": {
       "mode": "0644",
-      "sha256": "48cd3f48e3d743467f4c3b2c408e01ea88cb89482d855b28b714b97bb5d83a44",
-      "size": 8345
+      "sha256": "75f7df4bae4c8eb3440570d42cf673f1e870311cec1df020a16fc5c577e02fec",
+      "size": 9391
     },
     ".codex/hooks/git_guard.py": {
       "mode": "0644",
@@ -337,8 +352,18 @@
     },
     ".codex/hooks/policy_guard.py": {
       "mode": "0644",
-      "sha256": "3127f5360b17f95bb0512c7085b20c77b243f20c1b3389b6b01a890244d5b942",
-      "size": 33229
+      "sha256": "dadcc537ddc0791f353e1b26b72f304f1537a5f6218e26c065fa5f507728c527",
+      "size": 33767
+    },
+    ".codex/hooks/repository_context.py": {
+      "mode": "0644",
+      "sha256": "cf8f1a9b5f8a84df54d8ef351ecddfb48d1f31cb94b6f23cd3599bcb2e813492",
+      "size": 5580
+    },
+    ".codex/hooks/repository_overlay.py": {
+      "mode": "0644",
+      "sha256": "a4b3eb910e0a29d3306937d6104a37cf1f58b750af8cc4dca1ac20d96824936e",
+      "size": 15637
     },
     ".codex/hooks/run_guard.py": {
       "mode": "0644",
@@ -382,12 +407,12 @@
     },
     "AGENTS.md": {
       "mode": "0644",
-      "sha256": "8ed86b212679ebbb16548c16520fc5106bbcfe59026dada4cf829eef3cc1820e",
-      "size": 18097
+      "sha256": "8b2bb1c2a9bee38993bd91294e83ec6c744bede4b7f4cbbebb5e886389223c1e",
+      "size": 19095
     }
   },
   "profile": "public",
   "schema": 1,
-  "source_commit": "97cb9bfaf2846acf3c8753d00f609ec33776674a",
-  "version": "2.0.0-rc.3"
+  "source_commit": "4aea6bf2636b51ee49819450b1661558b9113de1",
+  "version": "2.0.0-rc.4"
 }
