@@ -1,16 +1,10 @@
-name: Bootstrap GitHub Org Metadata
+name: Preview GitHub Org Metadata
 
 on:
   workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Preview planned changes without mutating GitHub data."
-        type: boolean
-        default: true
 
 permissions:
   contents: read
-  issues: write
 
 concurrency:
   group: bootstrap-github-org
@@ -18,18 +12,17 @@ concurrency:
 
 jobs:
   bootstrap:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
-      - name: Bootstrap milestones and labels
+      - name: Preview milestones, labels, and optional protection
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
-          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          DRY_RUN: "1"
           REQUIRE_BRANCH_PROTECTION: "0"
         run: ./scripts/bootstrap-github-org.sh

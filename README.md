@@ -123,6 +123,7 @@ Useful docs:
 - `scripts/dev-env-check.sh`
 - `scripts/check.sh`
 - `go test ./...`
+- `go test -race ./...`
 - `go vet ./...`
 - `gofmt` or IDE formatting before commits
 - release build can use `goreleaser` and requires a semver git tag (`v*`) for `Release` workflow
@@ -131,9 +132,13 @@ Useful docs:
 - PRs are expected to carry an assigned GitHub milestone.
 - Maintainers can generate release-note drafts with the Milestone Notes workflow and
   [`docs/milestones.md`](docs/milestones.md).
-- Repository governance bootstrap supports preview mode via `DRY_RUN=1` and also runs in GitHub Actions through `.github/workflows/bootstrap-github-org.yml`.
-- Repository settings that require admin permissions are handled by
-  `scripts/bootstrap-github-settings.sh` from an authenticated maintainer shell.
+- GitHub metadata and settings helpers are contact-free, preview-only tools.
+  They never authenticate or apply changes; `DRY_RUN=0` fails closed. The
+  matching workflow also emits only a reviewable preview with read-only
+  permissions.
+- `scripts/check.sh` includes the race detector, redacting public-safety tests,
+  and an unpublished GoReleaser snapshot whose six archives, checksums, and six
+  Syft SBOMs are verified before any tag workflow may publish.
 - New provider support requires a provider policy under `docs/provider-policy/`.
 - Long-running implementation checkpoints are tracked in `docs/TASK_LOG.md`.
 - Agent-specific project context and approval boundaries are documented in
@@ -145,7 +150,9 @@ Useful docs:
 - Private operational notes (if present) live outside tracked repository content.
 - For release planning and milestone operations, follow
   [`docs/operations.md`](docs/operations.md) and [`docs/milestones.md`](docs/milestones.md).
-- Quick bootstrap for repo governance is `./scripts/bootstrap-github-org.sh`.
+- Contact-free governance previews are `./scripts/bootstrap-github-org.sh`
+  and `./scripts/bootstrap-github-settings.sh`; applying settings remains a
+  separate, explicitly approved operation outside these scripts.
 - Full local validation is `./scripts/check.sh`.
 
 ## License

@@ -13,7 +13,8 @@
 - [ ] No secrets in logs, snapshots, metrics, fixtures.
 - [ ] Prometheus labels reviewed for cardinality and privacy.
 - [ ] New external facts documented in `docs/99_sources.md`.
-- [ ] `go test ./...`, `govulncheck ./...`, lint and CodeQL pass.
+- [ ] `go test ./...`, `go test -race ./...`, `govulncheck ./...`, lint and CodeQL pass.
+- [ ] Public-safety tests and the unpublished archive/checksum/SBOM contract pass.
 - [ ] `CHANGELOG.md` updated.
 - [ ] `README.md` reflects functional and operational changes.
 - [ ] Pull request has a milestone assigned.

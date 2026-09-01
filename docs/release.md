@@ -8,6 +8,8 @@ GitHub Actions.
 - Milestone exists and includes the scoped issues/PRs for the release.
 - PRs merged are linked to the same milestone.
 - `CHANGELOG.md` is updated for user-visible and operational changes.
+- Hosted `ci`, race detection, vulnerability analysis, public-safety tests, and
+  the unpublished `release-contract` job are green.
 
 ## Recommended sequence
 
@@ -20,7 +22,9 @@ GitHub Actions.
      - optional `release_tag` (for creating/updating a draft release)
 3. Review notes artifact and adjust draft release text manually if needed.
 4. Create and push a semver tag (for example `v0.1.0`).
-5. Let `.github/workflows/release.yml` publish archives and SBOM.
+5. Let `.github/workflows/release.yml` first repeat the unpublished
+   archive/checksum/SBOM contract, then publish only if that independent job is
+   green.
 6. Keep milestone open until release notes, changelog, and version docs match
    the published state.
 7. Optional local release validation (preflight):
@@ -29,6 +33,7 @@ GitHub Actions.
 go install github.com/goreleaser/goreleaser/v2@latest
 goreleaser check
 goreleaser release --snapshot --skip=publish --clean
+python3 scripts/verify_release_artifacts.py --dist dist
 ```
 
 For beta releases, confirm the snapshot build includes Linux, macOS, and

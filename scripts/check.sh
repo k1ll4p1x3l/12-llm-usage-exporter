@@ -21,6 +21,9 @@ fi
 echo "[check] go test"
 go test ./...
 
+echo "[check] go race"
+go test -race ./...
+
 echo "[check] go vet"
 go vet ./...
 
@@ -59,8 +62,14 @@ PY
 echo "[check] public repository safety"
 python3 scripts/public_repo_sanity_check.py
 
+echo "[check] automation and artifact contract tests"
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+
 echo "[check] goreleaser"
 goreleaser healthcheck
 goreleaser check
+goreleaser release --snapshot --clean --skip=publish
+git diff --exit-code -- go.mod go.sum
+python3 scripts/verify_release_artifacts.py --dist dist
 
 echo "[check] ok"

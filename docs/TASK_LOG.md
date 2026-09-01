@@ -1,5 +1,60 @@
 # Task Log
 
+## Release-grade automation hardening — 2026-09-01
+
+- Objective: remove dynamic shell execution, make all repository-owned GitHub
+  settings automation contact-free, strengthen public-data boundaries, and
+  prove race/release/SBOM contracts without publishing or changing settings.
+- Worktree/base: linked worktree
+  `/private/tmp/agent-core-estate-20260831/12-llm-usage-exporter` on
+  `codex/release-grade-hardening`, based on
+  `8054cd75af844b8f806441ecef3ad48b1bf590d0`.
+- Replaced string-built `eval` commands with shell-escaped previews. Both
+  GitHub helpers reject apply mode before tool discovery; a fake `gh` sentinel
+  proves preview and negative paths perform no call. The dispatch workflow now
+  has read-only permission and cannot opt into apply.
+- Rebuilt the public scanner around bounded regular-file inventory, symlink and
+  special-file rejection, private-path/control-character checks, high-confidence
+  credential/network patterns, literal rather than regex extension, and
+  value-redacted findings.
+- Added an independent GoReleaser verifier for the exact six-platform archive
+  matrix, safe ZIP/tar members, checksums, and one recognized non-empty SBOM per
+  archive. Synthetic valid, missing-SBOM, and traversal fixtures prove the
+  contract without Go, Syft, release, or network contact.
+- Read back all seven open Dependabot PRs without mutation. Their heads were
+  behind or conflicting with current `main`, so the exact intended updates
+  were consolidated locally rather than merged independently:
+  - `actions/checkout` `v7.0.0` at
+    `9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0`;
+  - `actions/setup-go` `v7.0.0` at
+    `b7ad1dad31e06c5925ef5d2fc7ad053ef454303e`;
+  - `github/codeql-action` `v4.37.9` at
+    `cdf488f595d80d6e07e03d4674febd5ab45fa938`;
+  - `goreleaser/goreleaser-action` `v7.2.3` at
+    `f06c13b6b1a9625abc9e6e439d9c05a8f2190e94`;
+  - `github.com/pelletier/go-toml/v2` `v2.4.2` and
+    `github.com/prometheus/client_golang` `v1.24.1`, including its Go
+    `1.25.0` module floor and generated transitive checksum set.
+- The combined `go.mod`/`go.sum` state was compared byte-for-byte with the
+  two fetched Dependabot heads plus the non-overlapping TOML substitution.
+  The old PRs remain open and untouched; Remote Window 1 must close them only
+  after the replacement PR merges and a fresh content readback proves them
+  superseded.
+- Local evidence: Bash syntax, ShellCheck 0.11.0, Actionlint 1.7.12, Python
+  compile, fifteen stdlib tests, the real public-repository scan, JSON/YAML
+  parsing, managed-path exclusion, and `git diff --check` pass. The actual
+  Agent Core lock remains public `2.0.0-rc.4`, source
+  `4aea6bf2636b51ee49819450b1661558b9113de1`, with 82 managed files.
+- Hosted boundary: this Codex shell has no Go, govulncheck, Gitleaks,
+  GoReleaser, or Syft binary. `go test`, `go test -race`, `go vet`,
+  `govulncheck`, the actual unpublished six-platform build, and SBOM generation
+  remain mandatory Remote Window 1 gates and are not claimed locally.
+- No provider, credential, GitHub setting, workflow dispatch, release, tag,
+  Homelab, or managed Agent Core mutation occurred.
+- Next safe step: complete local diff/security review and milestone commit,
+  then continue with another collision-free Consumer; remote lifecycle remains
+  deferred to the exact bundled window.
+
 ## CI hardening checkpoint — 2026-08-26
 
 - Linked worktree branch `codex/ci-hardening-20260826`, based on current
