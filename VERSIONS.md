@@ -5,6 +5,8 @@ Current release baseline: `0.5.0-beta.1`
 - Initial go implementation is prepared for local build and iteration.
 - No public v1 semantics and no signed production release yet.
 - Development and CI baseline: Go `1.26.6`.
+- Module compatibility directive: Go `1.25.0`, required by the current
+  Prometheus client dependency.
 - User-local maintainer tools:
   - GoReleaser `v2.16.0`
   - Syft `v1.44.0` for release SBOM generation
@@ -13,12 +15,18 @@ Current release baseline: `0.5.0-beta.1`
   - govulncheck `v1.1.4`
 - Agent Core candidate baseline:
   - profile: `public`
-  - version: `2.0.0-dev`
-  - source commit: `1ba762d07ae8443d1984c7957dd326c765126b56`
+  - version: `2.0.0-rc.4`
+  - source commit: `4aea6bf2636b51ee49819450b1661558b9113de1`
+  - managed files: `82`
   - authoritative pin and hashes: `.agent-core.lock.json`
 - Direct Go module baselines:
-  - `github.com/pelletier/go-toml/v2` `v2.3.1`
-  - `github.com/prometheus/client_golang` `v1.23.2`
+  - `github.com/pelletier/go-toml/v2` `v2.4.2`
+  - `github.com/prometheus/client_golang` `v1.24.1`
+- Hosted action baselines:
+  - `actions/checkout` `v7.0.0`
+  - `actions/setup-go` `v7.0.0`
+  - `github/codeql-action` `v4.37.9`
+  - `goreleaser/goreleaser-action` `v7.2.3`
 
 ## Planned milestones
 

@@ -29,45 +29,36 @@ Recommended GitHub settings for this repository:
   - publish via tag push (`v*`) and GoReleaser workflow
   - keep release notes auto-generated or curated manually
 
-## Repository bootstrap helper
+## Contact-free repository previews
 
-Run once for a new repository clone to provision milestones and labels used by the workflow checks:
+Render the intended milestones and labels without GitHub authentication or
+network access:
 
 ```bash
 ./scripts/bootstrap-github-org.sh
 ```
 
-Use dry-run mode to inspect intended operations:
+The settings helper behaves the same way:
 
 ```bash
-DRY_RUN=1 ./scripts/bootstrap-github-org.sh
+./scripts/bootstrap-github-settings.sh
 ```
 
-You can also run this as an offline preview without GH authentication. For a
-full run, authenticate first (`gh auth login`) or execute the GitHub Action version.
+Both scripts default to `DRY_RUN=1` and reject `DRY_RUN=0`. They only emit
+shell-escaped command previews and canonical JSON payloads. They never invoke
+`gh`, authenticate, or mutate a repository.
 
-You can also run this from GitHub Actions:
+The manually dispatched workflow is also preview-only and has only
+`contents: read`:
 
 ```bash
 gh workflow run bootstrap-github-org.yml
 ```
 
-Admin-level repository settings are intentionally applied from an authenticated
-maintainer shell, not from the default `GITHUB_TOKEN` workflow token:
-
-```bash
-DRY_RUN=1 ./scripts/bootstrap-github-settings.sh
-./scripts/bootstrap-github-settings.sh
-```
-
-Set `REQUIRED_APPROVING_REVIEW_COUNT=1` only when at least one additional
-maintainer can approve pull requests.
-
-Run in dry-run mode from GitHub Actions:
-
-```bash
-gh workflow run bootstrap-github-org.yml -f dry_run=true
-```
+Any later settings change is a separate live action outside these helpers. It
+requires an exact target, current human approval, fresh readback, least-
+privilege credentials, dry-run/diff where supported, independent verification,
+and rollback planning. A printed preview never authorizes that action.
 
 If you need direct command execution, keep the check names aligned with this workflow:
 
@@ -97,7 +88,8 @@ Run the full local check gate:
 
 The project expects Go `1.26.6`, GoReleaser `v2.16.0`, Syft `v1.44.0` for release SBOM
 generation, Gitleaks `v8.30.1`, actionlint `v1.7.12`, and govulncheck
-`v1.1.4`.
+`v1.1.4`. The full check creates only an unpublished snapshot and verifies it
+with `scripts/verify_release_artifacts.py`.
 
 ## Milestone practice
 

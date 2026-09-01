@@ -12,6 +12,7 @@ permissions:
 env:
   CI_SKIP_DOCS_ONLY: "true"
   GO_VERSION: "1.26.6"
+  SYFT_VERSION: "v1.44.0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -19,13 +20,13 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     outputs:
       run_quality: ${{ steps.scope.outputs.run_quality }}
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -37,9 +38,11 @@ jobs:
         run: bash scripts/ci-change-scope.sh "$BASE_SHA" "$GITHUB_SHA"
       - name: Public-repository safety
         run: python3 scripts/public_repo_sanity_check.py
+      - name: Automation, public-safety, and artifact contract tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Setup Go
         if: steps.scope.outputs.run_quality == 'true'
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
@@ -53,6 +56,9 @@ jobs:
       - name: Run tests
         if: steps.scope.outputs.run_quality == 'true'
         run: go test ./...
+      - name: Run race detector
+        if: steps.scope.outputs.run_quality == 'true'
+        run: go test -race ./...
       - name: Run vet
         if: steps.scope.outputs.run_quality == 'true'
         run: go vet ./...
@@ -66,16 +72,52 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-15, windows-2025]
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
       - name: Run tests
         run: go test ./...
+
+  release-contract:
+    name: release-contract
+    needs: ci
+    if: needs.ci.outputs.run_quality == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Install Syft
+        id: download-syft
+        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        with:
+          syft-version: ${{ env.SYFT_VERSION }}
+      - name: Add Syft to PATH
+        run: dirname "$SYFT_CMD" >> "$GITHUB_PATH"
+        env:
+          SYFT_CMD: ${{ steps.download-syft.outputs.cmd }}
+      - name: Build unpublished snapshot
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          version: v2.16.0
+          args: release --snapshot --clean --skip=publish
+      - name: Verify module and release artifacts
+        run: |
+          git diff --exit-code -- go.mod go.sum
+          python3 scripts/verify_release_artifacts.py --dist dist

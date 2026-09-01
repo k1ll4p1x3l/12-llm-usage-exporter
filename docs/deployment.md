@@ -60,5 +60,9 @@ llm-usage-exporter snapshot --config examples/llm-usage-exporter.yaml
 - GitHub Actions builds Linux, macOS, and Windows `amd64` and `arm64` archives for tags `v*`.
 - Artifact checksums are produced as `checksums.txt`.
 - SBOM generation is enabled in `.goreleaser.yaml`.
+- Pull-request CI builds a non-publishing snapshot and verifies exactly six
+  platform archives, safe members, checksums, and one recognized SBOM per
+  archive. The tag workflow repeats this contract in a read-only preflight
+  before its publishing job starts.
 - See `docs/release.md` for milestone-first release sequencing and
   maintainer commands.

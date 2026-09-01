@@ -29,6 +29,10 @@ Managed-by-source: no
   a reviewed rollback, and explicit approval.
 - New runtime dependencies and new provider transports require explicit scope
   confirmation, focused tests, and documentation.
+- `scripts/bootstrap-github-org.sh`, `scripts/bootstrap-github-settings.sh`,
+  and `.github/workflows/bootstrap-github-org.yml` are permanently
+  preview-only. They must not authenticate, call GitHub, accept an apply mode,
+  or hold write permissions.
 
 ## Immutable provider and security boundaries
 
@@ -57,6 +61,10 @@ Managed-by-source: no
 
 - Minimum code handoff: `gofmt`, `go test ./...`, `go vet ./...`, relevant
   focused tests, `git diff --check`, and documentation review.
+- Concurrency-sensitive changes additionally require `go test -race ./...`.
+- Release changes require an unpublished snapshot and independent verification
+  of all six platform archives, archive members, checksums, and one valid SBOM
+  per archive before the publishing job can start.
 - Normal full gate: `./scripts/check.sh` with the tool versions documented in
   `VERSIONS.md`.
 - Agent Core changes additionally require central `verify-consumer`, a second

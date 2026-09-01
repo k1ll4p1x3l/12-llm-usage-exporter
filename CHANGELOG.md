@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Removed dynamic `eval` from GitHub metadata automation and made both local
+  GitHub helpers plus the dispatch workflow permanently contact-free and
+  preview-only.
+- Added fifteen dependency-free automation, public-safety, and release-artifact
+  tests, including redacted secret findings, symlink/private-path rejection,
+  binary-secret and symlink races, malicious archive traversal, checksum
+  validation, and six SBOMs.
+- Added Ubuntu race detection and a non-publishing GoReleaser/Syft contract job;
+  the tag workflow now requires the same read-only preflight before release.
+- Grouped Dependabot minor/patch updates for Go modules and GitHub Actions,
+  bounded open PRs, and retained independent review for major upgrades.
+- Consolidated the seven stale open Dependabot changes into this reviewed
+  hardening line: checkout/setup-go v7, CodeQL v4.37.9, GoReleaser Action
+  v7.2.3, go-toml v2.4.2, Prometheus client v1.24.1, and its Go 1.25 module
+  floor. All hosted actions remain pinned to immutable commits.
+- Pinned hosted runner labels and removed the unused release OIDC permission.
+- Corrected the documented Agent Core baseline to the immutable public
+  `2.0.0-rc.4` lock already present in the repository.
 - Fixed CI scope detection for very large change lists by consuming the full
   input, preventing `grep -q` and `pipefail` from turning a positive match into
   `run_heavy=false` after SIGPIPE.
