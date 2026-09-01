@@ -1,5 +1,46 @@
 # Task Log
 
+## Active run anchor — RC4 context completeness, 2026-09-01
+
+### Scope and non-goals
+
+- Make this Consumer-owned task log satisfy the current public RC4 context
+  contract without changing the already installed managed RC4 payload.
+- Linked worktree:
+  `/private/tmp/agent-core-estate-20260831/12-llm-usage-exporter-rc4-context`;
+  branch `codex/agent-core-context-completeness`; exact base
+  `e3ec1f6444dfcd4410efc87914aed35734eb216d`.
+- No provider access, credential handling, GitHub setting, workflow dispatch,
+  release, tag, Homelab, public/private-boundary change, or live effect is in
+  scope.
+
+### Current plan
+
+1. Add only the missing run-structure headings to this task log.
+2. Re-run the public RC4 context gate, consumer verifier, same-version no-op,
+   and repository-owned static validation.
+3. Create one local milestone commit. Push and PR lifecycle remain separately
+   gated.
+
+### Git status
+
+- The topic branch starts from the exact current `main` SHA above.
+- No push, pull request, remote branch, or managed Agent Core change has been
+  made for this run.
+- The intended diff is limited to `docs/TASK_LOG.md`.
+
+### Open risks
+
+- Hosted required checks and mergeability are unavailable until an authorized
+  PR exists.
+- Five existing Dependabot PRs are unrelated and must remain untouched.
+
+### Next safe step
+
+- Validate the context and public RC4 no-op locally, run public-safety and
+  repository checks, then create a milestone commit after an independent diff
+  readback.
+
 ## Release-grade automation hardening — 2026-09-01
 
 - Objective: remove dynamic shell execution, make all repository-owned GitHub
