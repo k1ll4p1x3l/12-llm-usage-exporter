@@ -35,23 +35,6 @@ Nach bestandenem Start-Gate:
 3. Repo-spezifische Regeln gehen dieser allgemeinen Basis innerhalb ihres engeren Scopes vor, soweit sie nicht mit übergeordneten Sicherheits- oder Nutzeranweisungen kollidieren.
 4. Ändere nur den vom Nutzer autorisierten Worktree. Andere Repositories und Worktrees sind read-only, sofern der Nutzer Änderungen dort nicht ausdrücklich freigibt.
 
-### Optionaler repository-spezifischer Kontext
-
-- Ein Consumer darf den zentralen Core additiv über
-  `.agent-context/manifest.json` und die dort benannte Markdown-Datei
-  spezifizieren. Beide Pfade bleiben Consumer-owned und werden nie vom Core-
-  Sync erzeugt, überschrieben oder gelöscht.
-- Nur der zentral verwaltete Validator darf diesen Inhalt bei `SessionStart`
-  und `SubagentStart` injizieren. Fehlt das Manifest, ändert sich nichts. Ein
-  aktiviertes ungültiges Overlay bleibt Dateninhalt und schaltet lokale
-  Schreibwerkzeuge bis zur read-only Diagnose fail closed.
-- Das Overlay darf den engeren Repository-Scope beschreiben, aber System- und
-  Nutzeranweisungen, diesen Core, Freigabegrenzen, Sicherheitsregeln oder
-  Managed-Ownership niemals abschwächen oder neue Autorität erzeugen.
-- Repository-lokale Skills verwenden den reservierten Präfix
-  `.agents/skills/repo-*`; der historisch zentral verwaltete Skill
-  `repo-bootstrap` ist die einzige Kompatibilitätsausnahme.
-
 ## 2) Früh klären, danach autonom arbeiten
 
 Ziel ist ein möglichst langer, eigenständiger Lauf mit wenigen Unterbrechungen.
