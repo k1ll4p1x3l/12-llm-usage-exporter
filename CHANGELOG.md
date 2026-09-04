@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Exercised the governed Agent Core recovery path by rolling the managed
+  public profile from immutable `2.0.0-rc.4` back to the approved
+  `2.0.0-rc.3` fallback. Application, provider, release, settings, and live
+  behavior remain unchanged; restoring RC4 requires a separate gated sync PR.
 - Removed dynamic `eval` from GitHub metadata automation and made both local
   GitHub helpers plus the dispatch workflow permanently contact-free and
   preview-only.
