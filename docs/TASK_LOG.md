@@ -1,5 +1,62 @@
 # Task Log
 
+## Checkpoint 2026-09-04 Europe/Berlin — RC4 to RC3 recovery rehearsal
+
+### Goal and authorization
+
+- Exercise the centrally approved Agent Core recovery path for the sole RC4
+  Stable pilot without changing application, provider, release, settings, or
+  live behavior.
+- Central Source `main` is bound to
+  `196669565d7959b92512c1799586c6e43eaa3f72`; the target inventory selects
+  only `pilot-12-llm-usage-exporter` on channel `stable`.
+- Consumer starting state is exact `main`
+  `13b77e871ac160935fa3a59a71741325f8cb3b72` with public RC4 lock SHA-256
+  `ea6965f02edd83b20e506fc2904ae64f55ce4780947db088b5d93850fe5077d7`.
+
+### Generated rollback and bounded remediation
+
+- Source workflow `33913598885` verified the immutable RC3 release,
+  attestations, historical Source, scoped GitHub App token, exact Consumer
+  starting state, dry-run, apply result, managed staging, and Draft-only
+  delivery.
+- It created Draft pull request #40 on branch
+  `agent-core/rollback-pilot-12-llm-usage-exporter-2.0.0-rc.3` with base
+  `13b77e871ac160935fa3a59a71741325f8cb3b72` and generated head
+  `3e5566218e8e3a53bb5307f377b807d7a5891b80`.
+- The generated diff changes only nine centrally managed paths. This
+  Consumer-owned Task Log entry and the required Changelog entry are the only
+  permitted additions; no application or provider path is in scope.
+
+### Validation and recovery boundary
+
+- Local repository validation passes: fifteen Python tests, Bash syntax for
+  `scripts/check.sh` and `scripts/dev-env-check.sh`, and the central
+  `verify-consumer` check against the exact public RC3 profile with 77 managed
+  files.
+- A tracked-tree export without the linked-worktree `.git` pointer passes the
+  redacting public-repository safety scanner. The direct worktree scan is not
+  applicable because that administrative pointer contains the local checkout
+  path and is never committed.
+- Go, `govulncheck`, Actionlint, Gitleaks, and GoReleaser are not installed in
+  this Codex shell. The full pinned toolchain therefore remains a mandatory
+  hosted check on the final pull-request head; no local substitute is claimed.
+- Hosted CI, CodeQL, Security, GitGuardian, Changelog, milestone, reviews,
+  threads, mergeability, exact diff, and public-safety gates must all pass on
+  the final head before Ready or merge.
+- Merging RC3 is only the first half of the rehearsal. A separately bound
+  Candidate sync PR must restore exact RC4, pass merged-main CI, central
+  `verify-consumer`, and a Same-Version-No-op before the Source may record
+  `rollback_rehearsal=pass`.
+- No release, tag, target, App, secret, permission, provider, product, or
+  Homelab state is changed by this repository PR.
+
+### Next safe step
+
+Commit the two validated Consumer-owned documentation paths, push without
+force, assign the established `0.5-beta` milestone, and stop if any fresh
+hosted gate is negative or ambiguous.
+
 ## Active run anchor — RC4 context completeness, 2026-09-01
 
 ### Scope and non-goals
