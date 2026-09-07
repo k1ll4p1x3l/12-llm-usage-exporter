@@ -28,6 +28,14 @@
             "timeout": 10,
             "statusMessage": "Restoring contracted run context",
             "additionalContextLimit": 1800
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/repository_context.py\" SessionStart",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/repository_context.py') SessionStart\"",
+            "timeout": 10,
+            "statusMessage": "Validating repository-specific agent context",
+            "additionalContextLimit": 16384
           }
         ]
       }
@@ -111,6 +119,14 @@
             "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/policy_guard.py') SubagentStart\"",
             "timeout": 10,
             "additionalContextLimit": 1200
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/repository_context.py\" SubagentStart",
+            "commandWindows": "powershell -NoProfile -NonInteractive -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/repository_context.py') SubagentStart\"",
+            "timeout": 10,
+            "statusMessage": "Passing validated repository context to subagent",
+            "additionalContextLimit": 16384
           }
         ]
       }
