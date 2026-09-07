@@ -1,5 +1,57 @@
 # Task Log
 
+## Checkpoint 2026-09-07 Europe/Berlin — restore RC4 after recovery rehearsal
+
+### Goal and authorization
+
+- Complete the second half of the approved recovery rehearsal by restoring
+  only the managed public Agent Core from the verified RC3 fallback to the
+  existing immutable `2.0.0-rc.4` release.
+- The pilot target was changed only from `stable` to `candidate`; the protected
+  post-write inventory has raw SHA-256
+  `44e19251a99a80f9a8b9818cece7c6677b64d329bc9b2f7b9c8ef3a88f226be0`
+  and canonical SHA-256
+  `66428808651ee73510b33a994cc3470b78d37d4266d0151f801f5cd21c36c70b`.
+- Consumer starting state is exact RC3 `main`
+  `6c2c0b1bd2854645e73d33178149750b86cf0e59`, whose CI, Security, CodeQL,
+  public-safety scan, fifteen repository tests, and central `verify-consumer`
+  readback are green.
+
+### Generated restoration and bounded documentation
+
+- Source workflow `34133140742` ran at exact Source `main`
+  `196669565d7959b92512c1799586c6e43eaa3f72`, verified the single Candidate
+  target, exact starting SHA, scoped GitHub App token, immutable RC4 release,
+  checksum, dry-run, apply result, and managed staging.
+- It created Draft pull request #41 on branch
+  `agent-core/sync-pilot-12-llm-usage-exporter-2.0.0-rc.4`, with base
+  `6c2c0b1bd2854645e73d33178149750b86cf0e59` and generated head
+  `ec9bd7995110ee6e0cbcbfef99dbf11f511ed29f`.
+- The generated diff changes exactly nine centrally managed paths. This Task
+  Log entry and the required Changelog entry are the only Consumer-owned
+  additions; application and provider paths remain excluded.
+
+### Validation and remaining gate
+
+- Before Push, the complete eleven-path branch must pass central
+  `verify-consumer` for public RC4 with 82 managed files, all fifteen local
+  Python tests, Bash syntax, tracked-tree public safety, staged-scope checks,
+  and an independent diff readback.
+- Hosted Changelog, milestone, CI, cross-OS, release-contract, Security,
+  CodeQL, GitGuardian, reviews, threads, and mergeability must all be green on
+  the final head before Ready and again before the SHA-bound squash merge.
+- After merge, exact-main RC4 verification and CI plus one separately bound
+  Candidate Same-Version-No-op must prove that the restoration left no further
+  commit, branch, or pull request.
+- No release, tag, App, secret, permission, product, provider, game, save,
+  Homelab, or other live state is changed by this Consumer pull request.
+
+### Next safe step
+
+Validate the exact eleven-path diff, commit these two Consumer-owned files as
+one local milestone, push without force, and bind the updated Draft before any
+Ready or merge stage.
+
 ## Checkpoint 2026-09-04 Europe/Berlin — RC4 to RC3 recovery rehearsal
 
 ### Goal and authorization
