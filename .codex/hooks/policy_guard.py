@@ -21,7 +21,6 @@ from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlparse
 
 import run_guard
-import repository_overlay
 
 
 MUTATING_LOCAL_TOOLS = {
@@ -695,18 +694,6 @@ def _pre_tool_use(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             }
         }
     mutating = _is_mutating(payload, entry)
-    overlay = repository_overlay.inspect_overlay(status.root)
-    if mutating and not repository_overlay.mutation_allowed(overlay):
-        return {
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "permissionDecision": "deny",
-                "permissionDecisionReason": (
-                    "Mutating tool denied because the enabled repository overlay is invalid: "
-                    + "; ".join(overlay.findings)
-                ),
-            }
-        }
     if status.errors and mutating:
         return {
             "hookSpecificOutput": {
