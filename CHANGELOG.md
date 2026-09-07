@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Restored the centrally managed public Agent Core from the exercised
+  `2.0.0-rc.3` fallback to the same immutable `2.0.0-rc.4` payload through an
+  exact SHA- and target-inventory-bound Candidate sync. Application, provider,
+  release, setting, and live behavior remain unchanged.
 - Exercised the governed Agent Core recovery path by rolling the managed
   public profile from immutable `2.0.0-rc.4` back to the approved
   `2.0.0-rc.3` fallback. Application, provider, release, settings, and live

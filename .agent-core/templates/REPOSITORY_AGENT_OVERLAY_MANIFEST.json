@@ -1,0 +1,8 @@
+{
+  "$schema": "../.agent-core/templates/REPOSITORY_AGENT_OVERLAY.schema.json",
+  "classification": "repository-internal",
+  "enabled": false,
+  "instruction_file": "AGENTS.repository.md",
+  "max_bytes": 8192,
+  "schema_version": 1
+}
